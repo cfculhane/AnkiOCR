@@ -1,3 +1,7 @@
-torch
-torchvision
-easyocr
+anki
+aqt
+Pillow
+pytesseract
+reportlab
+svglib
+tqdm
