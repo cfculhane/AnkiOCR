@@ -1,3 +1,7 @@
+## 0.2.3 - 2020-10-05
+
+- HOTFIX for tesseract cmd path on Mac
+
 ## 0.2.2 - 2020-10-05
 
 - Removed the install file for Tesseract-OCR for windows, now that the binaries themselves are included. 

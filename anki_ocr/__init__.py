@@ -7,4 +7,4 @@ from . import gui
 
 gui.create_menu()
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
