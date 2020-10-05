@@ -19,6 +19,7 @@ OCR of images in anki cards
 
 AnkiOCR depends on [the Tesseract OCR library](https://github.com/tesseract-ocr/tesseract).
 This should be installed before going further, [install files can be found here](https://tesseract-ocr.github.io/tessdoc/Home.html).
+I have mirrored windows install file for ease of access, [download here](https://github.com/cfculhane/AnkiOCR/raw/master/deps/win/tesseract-ocr-w64-setup-v5.0.0-alpha.20200328.exe) 
 
 AnkiOCR was built on Python 3.8, but should work for Python versions >= 3.6.
 

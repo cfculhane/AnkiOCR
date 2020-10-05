@@ -2,13 +2,11 @@
 
 from anki.hooks import addHook
 from aqt import mw
-# import all of the Qt GUI library
 from aqt.browser import Browser, QMenu
 from aqt.qt import QAction
-# import the "show info" tool from utils.py
 from aqt.utils import showInfo, askUser
 
-from anki_ocr.ocr import OCR
+from .ocr import OCR
 
 # We're going to add a menu item below. First we want to create a function to
 # be called when the menu item is activated.
