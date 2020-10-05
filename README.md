@@ -21,9 +21,20 @@ The aim of this addon was to generate searchable text for image-heavy notes, it 
 ## Installation
 
 AnkiOCR depends on [the Tesseract OCR library](https://github.com/tesseract-ocr/tesseract).
+
 If you're on **Windows**, this is included in the addon.
-If you're on **Linux or Mac**, [carefully follow the instructions here](https://tesseract-ocr.github.io/tessdoc/Home.html)
+
+If you're on **Mac**, the recommended approach is to install [Homebrew](https://brew.sh/), open terminal and run the command
+
+`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"`
+
+After this, run the command
+
+`brew install tesseract`
+
 A mac install script is being worked on, but for now use the above instructions.
+
+If you're on **Linux** [carefully follow the instructions here](https://tesseract-ocr.github.io/tessdoc/Home.html)
 
 AnkiOCR was built on Python 3.8, but should work for Python versions >= 3.6.
 
