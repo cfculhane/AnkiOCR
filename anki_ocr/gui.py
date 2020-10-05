@@ -20,6 +20,8 @@ SCRIPT_DIR = Path(__file__).parent
 def on_run_ocr(browser: Browser):
     tesseract_pth = check_tesseract_install()
 
+    showInfo(f"tesseract_pth = {tesseract_pth}")
+
     selected_nids = browser.selectedNotes()
     num_notes = len(selected_nids)
     if num_notes == 0:
@@ -77,7 +79,9 @@ def on_menu_setup(browser: Browser):
 
 
 def check_tesseract_install():
-    pytesseract.pytesseract.tesseract_cmd, platform_name = path_to_tesseract()
+    tesseract_cmd, platform_name = path_to_tesseract()
+    if platform_name == "Windows":
+        pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
     try:
         tesseract_version = pytesseract.get_tesseract_version()
         if CONFIG.get("tesseract_install_valid") is not True:
@@ -93,7 +97,8 @@ def check_tesseract_install():
         CONFIG["tesseract_install_valid"] = False
         mw.addonManager.writeConfig(__name__, CONFIG)
         showCritical(text=f"Could not find a valid Tesseract-OCR installation. \n"
-                          f"Please run the install script in {Path(SCRIPT_DIR, 'deps/install').absolute()}")
+                          f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
+                          f" install instructions")
         return None
 
 
