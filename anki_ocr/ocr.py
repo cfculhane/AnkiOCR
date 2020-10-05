@@ -88,6 +88,7 @@ class OCR:
                 showCritical(text=f"Could not find a valid Tesseract-OCR installation! \n"
                                   f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
                                   f" install instructions")
+                self.progress.finish()
                 raise pytesseract.TesseractNotFoundError()
 
             ocr_result = "\n".join([line.strip() for line in ocr_result.splitlines() if line.strip() != ""])
