@@ -4,10 +4,11 @@ from anki.hooks import addHook
 from aqt import mw
 from aqt.browser import Browser, QMenu
 from aqt.qt import QAction
-from aqt.utils import showInfo, askUser
+from aqt.utils import showInfo, askUser, showCritical
 
-from .ocr import OCR
 from ._vendor import pytesseract
+from .ocr import OCR
+
 # We're going to add a menu item below. First we want to create a function to
 # be called when the menu item is activated.
 CONFIG = mw.addonManager.getConfig(__name__)
@@ -35,15 +36,20 @@ def on_run_ocr(browser: Browser):
     progress.start(immediate=True, min=0, max=num_notes)
     try:
         ocr.run_ocr_on_notes(note_ids=selected_nids,
-                         overwrite_existing=CONFIG["overwrite_existing"])
-        showInfo(f"Processed OCR for {num_notes} cards")
-    except pytesseract.TesseractNotFoundError:
-        pass
-    except Exception as errmsg:
-        showInfo(f"Error encountered during processing, attempting to stop AnkiOCR gracefully. Error below:\n"
-                 f"{errmsg}")
-    finally:
+                             overwrite_existing=CONFIG["overwrite_existing"])
         progress.finish()
+        showInfo(f"Processed OCR for {num_notes} cards")
+
+    except pytesseract.TesseractNotFoundError:
+        progress.finish()
+        showCritical(text=f"Could not find a valid Tesseract-OCR installation! \n"
+                          f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
+                          f" install instructions")
+    except Exception as errmsg:
+        progress.finish()
+        showCritical(f"Error encountered during processing, attempting to stop AnkiOCR gracefully. Error below:\n"
+                     f"{errmsg}")
+    finally:
         browser.model.reset()
         mw.requireReset()
 
