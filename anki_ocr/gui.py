@@ -7,7 +7,7 @@ from aqt.qt import QAction
 from aqt.utils import showInfo, askUser
 
 from .ocr import OCR
-
+from ._vendor import pytesseract
 # We're going to add a menu item below. First we want to create a function to
 # be called when the menu item is activated.
 CONFIG = mw.addonManager.getConfig(__name__)
@@ -33,12 +33,19 @@ def on_run_ocr(browser: Browser):
     progress = mw.progress
     ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"])
     progress.start(immediate=True, min=0, max=num_notes)
-    ocr.run_ocr_on_notes(note_ids=selected_nids,
+    try:
+        ocr.run_ocr_on_notes(note_ids=selected_nids,
                          overwrite_existing=CONFIG["overwrite_existing"])
-    progress.finish()
-    browser.model.reset()
-    mw.requireReset()
-    showInfo(f"Processed OCR for {num_notes} cards")
+        showInfo(f"Processed OCR for {num_notes} cards")
+    except pytesseract.TesseractNotFoundError:
+        pass
+    except Exception as errmsg:
+        showInfo(f"Error encountered during processing, attempting to stop AnkiOCR gracefully. Error below:\n"
+                 f"{errmsg}")
+    finally:
+        progress.finish()
+        browser.model.reset()
+        mw.requireReset()
 
 
 def on_rm_ocr_fields(browser: Browser):
