@@ -18,7 +18,10 @@ SCRIPT_DIR = Path(__file__).parent
 
 
 def on_run_ocr(browser: Browser):
-    tesseract_pth = check_tesseract_install()
+    try:
+        tesseract_pth = check_tesseract_install()
+    except pytesseract.TesseractNotFoundError:
+        return None
 
     selected_nids = browser.selectedNotes()
     num_notes = len(selected_nids)
@@ -40,7 +43,10 @@ def on_run_ocr(browser: Browser):
 
 
 def on_rm_ocr_fields(browser: Browser):
-    tesseract_pth = check_tesseract_install()
+    try:
+        tesseract_pth = check_tesseract_install()
+    except pytesseract.TesseractNotFoundError:
+        return None
 
     selected_nids = browser.selectedNotes()
     num_notes = len(selected_nids)
@@ -100,7 +106,7 @@ def check_tesseract_install():
             showCritical(text=f"Could not find a valid Tesseract-OCR installation. \n"
                               f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
                               f" install instructions")
-            return None
+            raise pytesseract.TesseractNotFoundError()
     else:
         return pytesseract.pytesseract.tesseract_cmd
 
