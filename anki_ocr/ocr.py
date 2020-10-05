@@ -218,7 +218,7 @@ class OCR:
 
         :param note_ids: List of note ids
         """
-        self.col.modSchema(check=True)
+        # self.col.modSchema(check=True)
         self.ocr_process(note_ids=note_ids, overwrite_existing=overwrite_existing)
         self.col.reset()
         logger.info("Databased saved and closed")
@@ -228,7 +228,7 @@ class OCR:
 
         :param note_ids: List of note ids
         """
-        self.col.modSchema(check=True)
+        # self.col.modSchema(check=True)
         for note_id in note_ids:
             self.undo_convert_note_to_OCR(note_id=note_id)
         self.col.reset()
