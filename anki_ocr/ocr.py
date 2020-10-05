@@ -51,6 +51,9 @@ class OCR:
         self.progress = progress
         # ISO 639-2 Code, see https://www.loc.gov/standards/iso639-2/php/code_list.php
         self.languages = languages or ["eng"]
+
+        CONFIG = mw.addonManager.getConfig(__name__)
+        self.check_tesseract_install(CONFIG)
         tesseract_cmd, platform_name = path_to_tesseract()
         pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
 

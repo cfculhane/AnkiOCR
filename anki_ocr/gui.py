@@ -15,11 +15,6 @@ CONFIG = mw.addonManager.getConfig(__name__)
 
 
 def on_run_ocr(browser: Browser):
-    try:
-        OCR.check_tesseract_install(addon_config=CONFIG)
-    except pytesseract.TesseractNotFoundError:
-        return None
-
     selected_nids = browser.selectedNotes()
     num_notes = len(selected_nids)
     if num_notes == 0:
@@ -40,11 +35,6 @@ def on_run_ocr(browser: Browser):
 
 
 def on_rm_ocr_fields(browser: Browser):
-    try:
-        OCR.check_tesseract_install(addon_config=CONFIG)
-    except pytesseract.TesseractNotFoundError:
-        return None
-
     selected_nids = browser.selectedNotes()
     num_notes = len(selected_nids)
     if num_notes == 0:
