@@ -16,8 +16,8 @@ class tqdm_null_wrapper:
 
 def path_to_tesseract():
     exec_data = {"Windows": str(Path(DEPS_DIR, "win", "tesseract", "tesseract.exe")),
-                 "Darwin": "usr/local/bin/tesseract",
-                 "Linux": "usr/local/bin/tesseract"}
+                 "Darwin": "/usr/local/bin/tesseract",
+                 "Linux": "/usr/local/bin/tesseract"}
 
     platform_name = platform.system()  # E.g. 'Windows'
     return exec_data[platform_name], platform_name

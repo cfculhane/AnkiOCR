@@ -208,7 +208,7 @@ class OCR:
         :param query: Query to collection, see https://docs.ankiweb.net/#/searching for more info.
         """
         note_ids = self.col.findNotes(query=query)
-        self.col.modSchema(check=True)
+        # self.col.modSchema(check=True)
         self.ocr_process(note_ids=note_ids, overwrite_existing=overwrite_existing)
         self.col.reset()
         logger.info("Databased saved and closed")
