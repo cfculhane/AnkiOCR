@@ -20,8 +20,6 @@ SCRIPT_DIR = Path(__file__).parent
 def on_run_ocr(browser: Browser):
     tesseract_pth = check_tesseract_install()
 
-    showInfo(f"tesseract_pth = {tesseract_pth}")
-
     selected_nids = browser.selectedNotes()
     num_notes = len(selected_nids)
     if num_notes == 0:
