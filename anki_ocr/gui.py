@@ -6,7 +6,6 @@ from aqt.browser import Browser, QMenu
 from aqt.qt import QAction
 from aqt.utils import showInfo, askUser
 
-from ._vendor import pytesseract
 from .ocr import OCR
 
 # We're going to add a menu item below. First we want to create a function to
@@ -22,6 +21,14 @@ def on_run_ocr(browser: Browser):
         return
     elif askUser(f"Are you sure you wish to run OCR processing on {num_notes} notes?") is False:
         return
+
+    if CONFIG.get("tesseract_install_valid") is not True:
+        showInfo(
+            f"Note that because this addon changes the note template, you will see a warning about changing the database and uploading to AnkiWeb. \n"
+            f"This is normal, and will be shown each time you modify a note template.\n"
+            f"This message will be only be shown once.")
+        CONFIG["tesseract_install_valid"] = True
+        mw.addonManager.writeConfig(__name__, CONFIG)
 
     progress = mw.progress
     ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"])
@@ -67,7 +74,6 @@ def on_menu_setup(browser: Browser):
     browser_cards_menu = browser.form.menu_Cards
     browser_cards_menu.addSeparator()
     browser_cards_menu.addMenu(anki_ocr_menu)
-
 
 
 def create_menu():

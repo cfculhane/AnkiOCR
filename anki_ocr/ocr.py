@@ -183,14 +183,17 @@ class OCR:
             if self.progress is not None:
                 self.progress.update(value=i, max=len(note_ids))
             note = self.col.getNote(note_id)
-            if self.is_OCR_note(note) is False:
-                note = self.convert_note_to_OCR(note_id)
-            elif self.is_OCR_note(note) is True and overwrite_existing is False:
+            if self.is_OCR_note(note) is True and overwrite_existing is False:
                 logger.info(f"Note id {note_id} is already processd. Set overwrite_existing=True to force reprocessing")
                 continue
 
+            # Run this first, so that tesseract install is implicitly checked before modifying notes!
             note_images = self.get_images_from_note(note)
             note_images = self.process_imgs(images=note_images)
+
+            if self.is_OCR_note(note) is False:
+                note = self.convert_note_to_OCR(note_id)
+
             if len(note_images) > 0:
                 self.add_imgdata_to_note(note=note, images=note_images)
 
@@ -207,7 +210,7 @@ class OCR:
         """
         note_ids = self.col.findNotes(query=query)
         self.col.modSchema(check=True)
-        self.ocr_process(note_ids=note_ids, overwrite_existing=True)
+        self.ocr_process(note_ids=note_ids, overwrite_existing=overwrite_existing)
         self.col.reset()
         logger.info("Databased saved and closed")
 
@@ -232,35 +235,6 @@ class OCR:
         self.col.reset()
         logger.info("Databased saved and closed")
 
-    @staticmethod
-    def check_tesseract_install(addon_config):
-        from aqt.utils import showInfo, showCritical
-
-        tesseract_cmd, platform_name = path_to_tesseract()
-        pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
-
-        if addon_config.get("tesseract_install_valid") is not True:
-            try:
-                test_txt = pytesseract.image_to_string(str(Path(SCRIPT_DIR, "example.png")))
-                showInfo(
-                    f"Note that because this addon changes the note template, you will see a warning about changing the database and uploading to AnkiWeb. \n"
-                    f"This is normal, and will be shown each time you modify a note template.\n"
-                    f"Successfully checked for Tesseract on platform '{platform_name}\n"
-                    f"This message will be only be shown once.")
-                addon_config["tesseract_install_valid"] = True
-                mw.addonManager.writeConfig(__name__, addon_config)
-                return True
-
-            except pytesseract.TesseractNotFoundError:
-
-                addon_config["tesseract_install_valid"] = False
-                mw.addonManager.writeConfig(__name__, addon_config)
-                showCritical(text=f"Could not find a valid Tesseract-OCR installation. \n"
-                                  f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
-                                  f" install instructions")
-                raise pytesseract.TesseractNotFoundError()
-        else:
-            return False
 
 
 # %%
