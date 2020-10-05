@@ -48,7 +48,8 @@ class OCR:
         self.progress = progress
         # ISO 639-2 Code, see https://www.loc.gov/standards/iso639-2/php/code_list.php
         self.languages = languages or ["eng"]
-        pytesseract.pytesseract.tesseract_cmd = str(Path(tesseract_pth))
+        if tesseract_pth is not None:
+            pytesseract.pytesseract.tesseract_cmd = str(tesseract_pth)
 
     def get_images_from_note(self, note):
         pattern = r'(?:<img src=")(.*?)(?:"(?:>|\B))'
