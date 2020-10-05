@@ -53,7 +53,6 @@ class OCR:
         self.languages = languages or ["eng"]
 
         CONFIG = mw.addonManager.getConfig(__name__)
-        self.check_tesseract_install(CONFIG)
         tesseract_cmd, platform_name = path_to_tesseract()
         pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
 
