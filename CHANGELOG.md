@@ -1,3 +1,7 @@
+## 0.2.5 - 2020-10-06
+
+- Add alternate import method for Collection due to API changes in Anki
+
 ## 0.2.4 - 2020-10-05
 
 - Changed order of operations so that OCR is attempted before notes are modified to elimainate risk of database errors

@@ -5,7 +5,12 @@ from pathlib import Path
 from typing import Dict, Sequence, Optional, List
 
 import anki
-from anki.collection import Collection
+
+try:
+    from anki.collection import Collection
+except ImportError:  # Older anki versions
+    from anki.storage import Collection
+
 from anki.notes import Note
 
 try:
