@@ -1,7 +1,19 @@
 # AnkiOCR
 OCR of images in anki cards
 
+## Usage
 
+1. Open the card browser and select the note(s) you want to process. Use the search bar at the top, select tags, decks, etc.
+
+2. On the toolbar at the top, select 'Cards', then 'AnkiOCR', and select 'Run AnkiOCR on selected notes', as shown below
+
+![docs/menu.png](docs/menu.png) 
+
+3. After processing, the notes will be updated with an additional 'OCR' field with the extracted text, example below:
+
+![docs/update_field.png](docs/update_field.png) 
+
+4. If you want to remove the OCR field from any notes, select them and then use the "Remove OCR field from selected notes" option in the menu shown above
 
 ## Installation
 
