@@ -1,3 +1,8 @@
+## 0.2.4 - 2020-10-05
+
+- Changed order of operations so that OCR is attempted before notes are modified to elimainate risk of database errors
+- Updated path to tesseract executable for mac and linux
+
 ## 0.2.3 - 2020-10-05
 
 - HOTFIX for tesseract cmd path on Mac
