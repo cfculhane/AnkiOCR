@@ -4,6 +4,8 @@ Anki 2.1 addon to generate OCR text from images inside of Anki notes/cards. Note
 
 The aim of this addon was to generate searchable text for image-heavy notes, it is not intended to produce high quality, perfectly ordered text!
 
+Note that because this addon changes the note template, you will see a warning about changing the database and uploading to AnkiWeb. This is normal.
+
 ## Usage
 
 1. Open the card browser and select the note(s) you want to process. Use the search bar at the top, select tags, decks, etc.

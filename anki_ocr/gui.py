@@ -84,8 +84,11 @@ def check_tesseract_install():
     if CONFIG.get("tesseract_install_valid") is not True:
         try:
             test_txt = pytesseract.image_to_string(str(Path(SCRIPT_DIR, "example.png")))
-            showInfo(f"Successfully using Tesseract on platform '{platform_name}'\n"
-                     f"This message will be only be shown once.")
+            showInfo(
+                f"Note that because this addon changes the note template, you will see a warning about changing the database and uploading to AnkiWeb. \n"
+                f"This is normal, and will be shown each time you modify a note template.\n"
+                f"Successfully checked for Tesseract on platform '{platform_name}\n"
+                f"This message will be only be shown once.")
             CONFIG["tesseract_install_valid"] = True
             mw.addonManager.writeConfig(__name__, CONFIG)
             return pytesseract.pytesseract.tesseract_cmd

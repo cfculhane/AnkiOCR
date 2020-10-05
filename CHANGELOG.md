@@ -1,7 +1,11 @@
+## 0.2.2 - 2020-10-05
+
+- Removed the install file for Tesseract-OCR for windows, now that the binaries themselves are included. 
+- Updated the inital message the user sees to notify re: the database change message Anki will show.
+
 ## 0.2.1 - 2020-10-05
 
 - HOTFIX for Fixing tesseract executable detection
-
 
 ## 0.2.0 - 2020-10-05
 
