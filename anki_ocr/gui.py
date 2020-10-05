@@ -1,19 +1,25 @@
 # import the main window object (mw) from aqt
+from pathlib import Path
 
 from anki.hooks import addHook
 from aqt import mw
 from aqt.browser import Browser, QMenu
 from aqt.qt import QAction
-from aqt.utils import showInfo, askUser
+from aqt.utils import showInfo, askUser, showCritical
 
+from ._vendor import pytesseract
 from .ocr import OCR
+from .utils import path_to_tesseract
 
 # We're going to add a menu item below. First we want to create a function to
 # be called when the menu item is activated.
 CONFIG = mw.addonManager.getConfig(__name__)
+SCRIPT_DIR = Path(__file__).parent
 
 
 def on_run_ocr(browser: Browser):
+    tesseract_pth = check_tesseract_install()
+
     selected_nids = browser.selectedNotes()
     num_notes = len(selected_nids)
     if num_notes == 0:
@@ -23,7 +29,7 @@ def on_run_ocr(browser: Browser):
         return
 
     progress = mw.progress
-    ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"], tesseract_pth=CONFIG["tesseract_pth"])
+    ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"], tesseract_pth=tesseract_pth)
     progress.start(immediate=True, min=0, max=num_notes)
     ocr.run_ocr_on_notes(note_ids=selected_nids,
                          overwrite_existing=CONFIG["overwrite_existing"])
@@ -34,6 +40,8 @@ def on_run_ocr(browser: Browser):
 
 
 def on_rm_ocr_fields(browser: Browser):
+    tesseract_pth = check_tesseract_install()
+
     selected_nids = browser.selectedNotes()
     num_notes = len(selected_nids)
     if num_notes == 0:
@@ -44,7 +52,7 @@ def on_rm_ocr_fields(browser: Browser):
 
     progress = mw.progress
     progress.start(immediate=True)
-    ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"], tesseract_pth=CONFIG["tesseract_pth"])
+    ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"], tesseract_pth=tesseract_pth)
     ocr.remove_ocr_on_notes(note_ids=selected_nids)
     mw.progress.finish()
     browser.model.reset()
@@ -66,6 +74,27 @@ def on_menu_setup(browser: Browser):
     browser_cards_menu = browser.form.menu_Cards
     browser_cards_menu.addSeparator()
     browser_cards_menu.addMenu(anki_ocr_menu)
+
+
+def check_tesseract_install():
+    pytesseract.pytesseract.tesseract_cmd, platform_name = path_to_tesseract()
+    try:
+        tesseract_version = pytesseract.get_tesseract_version()
+        if CONFIG.get("tesseract_install_valid") is not True:
+            showInfo(
+                f"Successfully using Tesseract version: {tesseract_version} on platform '{platform_name}'\n"
+                f"This message will be only be shown once.")
+        CONFIG["tesseract_install_valid"] = True
+        mw.addonManager.writeConfig(__name__, CONFIG)
+        return pytesseract.pytesseract.tesseract_cmd
+
+    except pytesseract.TesseractNotFoundError:
+
+        CONFIG["tesseract_install_valid"] = False
+        mw.addonManager.writeConfig(__name__, CONFIG)
+        showCritical(text=f"Could not find a valid Tesseract-OCR installation. \n"
+                          f"Please run the install script in {Path(SCRIPT_DIR, 'deps/install').absolute()}")
+        return None
 
 
 def create_menu():

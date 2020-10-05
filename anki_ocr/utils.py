@@ -1,8 +1,10 @@
-import subprocess
-import sys
+import platform
 from pathlib import Path
 
+DEPS_DIR = Path(__file__).parent / "deps"
 VENDOR_DIR = Path(__file__).parent / "_vendor"
+
+
 class tqdm_null_wrapper:
     def __init__(self, iterable, **kwargs):
         self.iterable = iterable
@@ -12,9 +14,11 @@ class tqdm_null_wrapper:
             yield obj
 
 
+def path_to_tesseract():
+    exec_data = {"Windows": str(Path(DEPS_DIR, "win", "tesseract", "tesseract.exe")),
+                 "Darwin": "tesseract",
+                 "Linux": "tesseract"}
 
-def install(package_name):
-    from ._vendor import pip
-    print(f"Attempting to install {package_name}")
-    pip.main(['install', package_name, f'--install-option="--prefix={VENDOR_DIR.absolute()}"'])
+    platform_name = platform.system()  # E.g. 'Windows'
+    return exec_data[platform_name], platform_name
 

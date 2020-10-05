@@ -42,7 +42,7 @@ class OCR:
 
     def __init__(self, col: Collection, progress: Optional['ProgressManager'] = None,
                  languages: Optional[List[str]] = None,
-                 tesseract_pth=r'C:\Program Files\Tesseract-OCR\tesseract'):
+                 tesseract_pth="tesseract"):
         self.col = col
         self.media_dir = col.media.dir()
         self.progress = progress

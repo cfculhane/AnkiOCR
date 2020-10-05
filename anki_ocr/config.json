@@ -1,5 +1,5 @@
 {
     "overwrite_existing": true,
     "languages": ["eng"],
-    "tesseract_pth": "C:/Program Files/Tesseract-OCR/tesseract"
+    "tesseract_install_valid": null
 }
