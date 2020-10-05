@@ -18,7 +18,10 @@ from threading import Timer
 from time import sleep
 
 from ..distutils.version import LooseVersion
-from ..PIL import Image
+try:
+    from ..PIL import Image
+except ModuleNotFoundError:
+    Image = None
 
 tesseract_cmd = 'tesseract'
 

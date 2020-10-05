@@ -4,6 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Dict, Sequence, Optional, List
 
+import anki
 from anki.collection import Collection
 from anki.notes import Note
 
@@ -27,8 +28,7 @@ if ANKI_ENV is False:
 else:
     from aqt.progress import ProgressManager
     from ._vendor import pytesseract
-    from ._vendor.PIL import Image
-
+    Image = None
     renderPM = None
     svg2rlg = None
     from .utils import tqdm_null_wrapper as tqdm
@@ -39,15 +39,16 @@ logger = logging.getLogger(__name__)
 
 
 class OCR:
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
     def __init__(self, col: Collection, progress: Optional['ProgressManager'] = None,
-                 languages: Optional[List[str]] = None):
+                 languages: Optional[List[str]] = None,
+                 tesseract_pth=r'C:\Program Files\Tesseract-OCR\tesseract'):
         self.col = col
         self.media_dir = col.media.dir()
         self.progress = progress
-        self.languages = languages or [
-            "eng"]  # ISO 639-2 Code, see https://www.loc.gov/standards/iso639-2/php/code_list.php
+        # ISO 639-2 Code, see https://www.loc.gov/standards/iso639-2/php/code_list.php
+        self.languages = languages or ["eng"]
+        pytesseract.pytesseract.tesseract_cmd = str(Path(tesseract_pth))
 
     def get_images_from_note(self, note):
         pattern = r'(?:<img src=")(.*?)(?:"(?:>|\B))'
@@ -72,7 +73,9 @@ class OCR:
                     renderPM.drawToFile(svg_draw, "temp.png", fmt="PNG")
                     img = Image.open("temp.png")
             else:
-                img = Image.open(img_data["path"])
+                # img = Image.open(img_data["path"])
+                img = str(img_data["path"].absolute())
+
             ocr_result = pytesseract.image_to_string(img, lang="+".join(self.languages))
             ocr_result = "\n".join([line.strip() for line in ocr_result.splitlines() if line.strip() != ""])
             img_data["text"] = ocr_result
@@ -223,18 +226,21 @@ class OCR:
         logger.info("Databased saved and closed")
 
 
-
 # %%
 if __name__ == '__main__':
     # Not to be run inside Anki
     PROFILE_HOME = Path(r"C:\GitHub\anki\User 1")
     cpath = PROFILE_HOME / "collection.anki2"
-    collection = Collection(str(cpath), log=True)  # Collection is locked from here on
+    try:
+        collection = Collection(str(cpath), log=True)  # Collection is locked from here on
+    except anki.rsbackend.DBError:
+        print("Anki collection already open, attempting to continue")
+
     ocr = OCR(col=collection)
     QUERY = "tag:RG::MS::RG4.00_Lab"
-    # QUERY = "tag:OCR"
+    QUERY = "tag:OCR"
     # QUERY = ""
-    # ocr.run_ocr_on_query(QUERY)
+    ocr.run_ocr_on_query(QUERY)
     # collection.close(save=True)
-    note_ids_c = collection.findNotes(QUERY)
-    ocr.remove_ocr_on_notes(note_ids_c)
+    # note_ids_c = collection.findNotes(QUERY)
+    # ocr.remove_ocr_on_notes(note_ids_c)
