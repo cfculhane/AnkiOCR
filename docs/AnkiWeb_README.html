@@ -17,10 +17,9 @@ This is currently in beta stage, please submit a bug report on GitHub if bugs ar
 
 AnkiOCR depends on <a href="https://github.com/tesseract-ocr/tesseract" rel="nofollow">the Tesseract OCR library</a>.
 
-This should be installed before going further, <a href="https://tesseract-ocr.github.io/tessdoc/Home.html" rel="nofollow"> carefully follow the instructions here</a>
-If you're on Windows, I have mirrored the install file, <a href="https://github.com/cfculhane/AnkiOCR/raw/master/deps/win/tesseract-ocr-w64-setup-v5.0.0-alpha.20200328.exe" rel="nofollow"> download here</a>
-
-If you install Tesseract to a non-standard location, you may need to update the path to the tesseract executable in the addon config (Tools -&gt; Addons -&gt; Config)
+If you're on <b>Windows</b>, this is included in the addon.
+If you're on <b>Linux or Mac</b> <a href="https://tesseract-ocr.github.io/tessdoc/Home.html" rel="nofollow"> carefully follow the instructions here</a>
+A mac install script is being worked on, but for now use the above instructions.
 
 Source code available at <a href="https://github.com/cfculhane/ankiOCR" rel="nofollow"> my GitHub</a>
 
@@ -48,5 +47,11 @@ This program is distributed in the hope that it will be useful but WITHOUT ANY W
 
 <b> Changelog </b>
 <ul>
-    - 0.1.0 - Initial Release
+    - 0.2.0 - 2020-10-05
+        - Now packaged with windows binaries for Tesseract-OCR, no install neccesary!
+        - Added flag in config.json to indicate valid tesseract exec
+        - Updates to README to reflect above changes
+
+    - 0.1.0 - 2020-10-05
+        - Initial Release
 </ul>
