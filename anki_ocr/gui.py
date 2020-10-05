@@ -82,24 +82,26 @@ def check_tesseract_install():
     tesseract_cmd, platform_name = path_to_tesseract()
     if platform_name == "Windows":
         pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
-    try:
-        tesseract_version = pytesseract.get_tesseract_version()
-        if CONFIG.get("tesseract_install_valid") is not True:
-            showInfo(
-                f"Successfully using Tesseract version: {tesseract_version} on platform '{platform_name}'\n"
-                f"This message will be only be shown once.")
-        CONFIG["tesseract_install_valid"] = True
-        mw.addonManager.writeConfig(__name__, CONFIG)
+
+    if CONFIG.get("tesseract_install_valid") is not True:
+        try:
+            test_txt = pytesseract.image_to_string(str(Path(SCRIPT_DIR, "example.png")))
+            showInfo(f"Successfully using Tesseract on platform '{platform_name}'\n"
+                     f"This message will be only be shown once.")
+            CONFIG["tesseract_install_valid"] = True
+            mw.addonManager.writeConfig(__name__, CONFIG)
+            return pytesseract.pytesseract.tesseract_cmd
+
+        except pytesseract.TesseractNotFoundError:
+
+            CONFIG["tesseract_install_valid"] = False
+            mw.addonManager.writeConfig(__name__, CONFIG)
+            showCritical(text=f"Could not find a valid Tesseract-OCR installation. \n"
+                              f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
+                              f" install instructions")
+            return None
+    else:
         return pytesseract.pytesseract.tesseract_cmd
-
-    except pytesseract.TesseractNotFoundError:
-
-        CONFIG["tesseract_install_valid"] = False
-        mw.addonManager.writeConfig(__name__, CONFIG)
-        showCritical(text=f"Could not find a valid Tesseract-OCR installation. \n"
-                          f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
-                          f" install instructions")
-        return None
 
 
 def create_menu():
