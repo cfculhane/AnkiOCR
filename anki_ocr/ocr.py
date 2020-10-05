@@ -1,5 +1,7 @@
 import logging
+import platform
 import re
+import sys
 from copy import deepcopy
 from pathlib import Path
 from typing import Dict, Sequence, Optional, List
@@ -13,14 +15,12 @@ except ImportError:  # Older anki versions
 
 from anki.notes import Note
 
-try:
-    from aqt import mw
-
-    print("Running in anki")
-    ANKI_ENV = True
-except ModuleNotFoundError:
+if "python" in Path(sys.executable).stem:
     print("Not running in anki")
     ANKI_ENV = False
+else:  # anki.exe or equivalent
+    ANKI_ENV = True
+    print("Running in anki")
 
 if ANKI_ENV is False:
     ProgressManager = None
@@ -39,9 +39,9 @@ else:
     svg2rlg = None
     from .utils import tqdm_null_wrapper as tqdm
 
-from .utils import path_to_tesseract
-
 SCRIPT_DIR = Path(__file__).parent
+DEPS_DIR = SCRIPT_DIR / "deps"
+
 logging_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=logging_format, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -50,16 +50,17 @@ logger = logging.getLogger(__name__)
 class OCR:
 
     def __init__(self, col: Collection, progress: Optional['ProgressManager'] = None,
-                 languages: Optional[List[str]] = None):
+                 languages: Optional[List[str]] = None, text_output_location="tooltip"):
         self.col = col
         self.media_dir = col.media.dir()
         self.progress = progress
         # ISO 639-2 Code, see https://www.loc.gov/standards/iso639-2/php/code_list.php
         self.languages = languages or ["eng"]
 
-        CONFIG = mw.addonManager.getConfig(__name__)
-        tesseract_cmd, platform_name = path_to_tesseract()
+        tesseract_cmd, platform_name = self.path_to_tesseract()
         pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
+        assert text_output_location in ["tooltip", "new_field"]
+        self.text_output_location = text_output_location
 
     def get_images_from_note(self, note):
         pattern = r'(?:<img src=")(.*?)(?:"(?:>|\B))'
@@ -93,11 +94,18 @@ class OCR:
         return images
 
     @staticmethod
-    def add_imgdata_to_note(note: Note, images: Dict):
-        note["OCR"] = ""
-        for img_name, img_data in images.items():
-            if img_data['text'] != "":
-                note["OCR"] += f"Image: {img_name}\n{'-' * 20}\n{img_data['text']}".replace('\n', '<br/>')
+    def add_imgdata_to_note(note: Note, images: Dict, method="tooltip"):
+        if method == "tooltip":
+            for img_name, img_data in images.items():
+                note[img_data["field"]] = note[img_data["field"]].replace(
+                    f'"{img_data["path"].name}"', f'"{img_data["path"].name}" title="{img_data["text"]}"')
+        elif method == "new_field":
+            note["OCR"] = ""
+            for img_name, img_data in images.items():
+                if img_data['text'] != "":
+                    note["OCR"] += f"Image: {img_name}\n{'-' * 20}\n{img_data['text']}".replace('\n', '<br/>')
+        else:
+            raise ValueError(f"method {method} not valid. Only 'new_field' and 'tooltip' (default) are allowed.")
         note.flush()
         return note
 
@@ -195,11 +203,11 @@ class OCR:
             note_images = self.get_images_from_note(note)
             note_images = self.process_imgs(images=note_images)
 
-            if self.is_OCR_note(note) is False:
+            if self.is_OCR_note(note) is False and self.text_output_location == "new_field":
                 note = self.convert_note_to_OCR(note_id)
 
             if len(note_images) > 0:
-                self.add_imgdata_to_note(note=note, images=note_images)
+                self.add_imgdata_to_note(note=note, images=note_images, method=self.text_output_location)
 
             if i % save_every_n == 0:
                 self.col.save()
@@ -226,7 +234,7 @@ class OCR:
         # self.col.modSchema(check=True)
         self.ocr_process(note_ids=note_ids, overwrite_existing=overwrite_existing)
         self.col.reset()
-        logger.info("Databased saved and closed")
+        logger.info("Databased saved")
 
     def remove_ocr_on_notes(self, note_ids: List[int]):
         """ Removes the OCR field on a sequence of notes returned from a collection query.
@@ -237,7 +245,16 @@ class OCR:
         for note_id in note_ids:
             self.undo_convert_note_to_OCR(note_id=note_id)
         self.col.reset()
-        logger.info("Databased saved and closed")
+        logger.info("Databased saved")
+
+    @staticmethod
+    def path_to_tesseract():
+        exec_data = {"Windows": str(Path(DEPS_DIR, "win", "tesseract", "tesseract.exe")),
+                     "Darwin": "/usr/local/bin/tesseract",
+                     "Linux": "/usr/local/bin/tesseract"}
+
+        platform_name = platform.system()  # E.g. 'Windows'
+        return exec_data[platform_name], platform_name
 
 
 # %%
@@ -254,7 +271,7 @@ if __name__ == '__main__':
     QUERY = "tag:RG::MS::RG4.00_Lab"
     QUERY = "tag:OCR"
     # QUERY = ""
-    ocr.run_ocr_on_query(QUERY)
+    # ocr.run_ocr_on_query(QUERY)
     # collection.close(save=True)
     # note_ids_c = collection.findNotes(QUERY)
     # ocr.remove_ocr_on_notes(note_ids_c)

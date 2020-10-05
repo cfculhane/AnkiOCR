@@ -5,3 +5,4 @@ pytesseract
 reportlab
 svglib
 tqdm
+PyQtWebEngine
