@@ -1,4 +1,5 @@
 import platform
+import sys
 from pathlib import Path
 
 DEPS_DIR = Path(__file__).parent / "deps"
@@ -20,5 +21,9 @@ def path_to_tesseract():
                  "Linux": "tesseract"}
 
     platform_name = platform.system()  # E.g. 'Windows'
+    if platform_name in ["Darwin", "Linux"]:
+        sys.path.append("usr/local/bin")
+        sys.path.append("usr/local/bin/tesseract")
+
     return exec_data[platform_name], platform_name
 
