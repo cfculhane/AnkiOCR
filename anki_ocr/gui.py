@@ -1,25 +1,22 @@
 # import the main window object (mw) from aqt
-from pathlib import Path
 
 from anki.hooks import addHook
 from aqt import mw
 from aqt.browser import Browser, QMenu
 from aqt.qt import QAction
-from aqt.utils import showInfo, askUser, showCritical
+from aqt.utils import showInfo, askUser
 
 from ._vendor import pytesseract
 from .ocr import OCR
-from .utils import path_to_tesseract
 
 # We're going to add a menu item below. First we want to create a function to
 # be called when the menu item is activated.
 CONFIG = mw.addonManager.getConfig(__name__)
-SCRIPT_DIR = Path(__file__).parent
 
 
 def on_run_ocr(browser: Browser):
     try:
-        tesseract_pth = check_tesseract_install()
+        OCR.check_tesseract_install(addon_config=CONFIG)
     except pytesseract.TesseractNotFoundError:
         return None
 
@@ -44,7 +41,7 @@ def on_run_ocr(browser: Browser):
 
 def on_rm_ocr_fields(browser: Browser):
     try:
-        tesseract_pth = check_tesseract_install()
+        OCR.check_tesseract_install(addon_config=CONFIG)
     except pytesseract.TesseractNotFoundError:
         return None
 
@@ -81,33 +78,6 @@ def on_menu_setup(browser: Browser):
     browser_cards_menu.addSeparator()
     browser_cards_menu.addMenu(anki_ocr_menu)
 
-
-def check_tesseract_install():
-    tesseract_cmd, platform_name = path_to_tesseract()
-    pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
-
-    if CONFIG.get("tesseract_install_valid") is not True:
-        try:
-            test_txt = pytesseract.image_to_string(str(Path(SCRIPT_DIR, "example.png")))
-            showInfo(
-                f"Note that because this addon changes the note template, you will see a warning about changing the database and uploading to AnkiWeb. \n"
-                f"This is normal, and will be shown each time you modify a note template.\n"
-                f"Successfully checked for Tesseract on platform '{platform_name}\n"
-                f"This message will be only be shown once.")
-            CONFIG["tesseract_install_valid"] = True
-            mw.addonManager.writeConfig(__name__, CONFIG)
-            return pytesseract.pytesseract.tesseract_cmd
-
-        except pytesseract.TesseractNotFoundError:
-
-            CONFIG["tesseract_install_valid"] = False
-            mw.addonManager.writeConfig(__name__, CONFIG)
-            showCritical(text=f"Could not find a valid Tesseract-OCR installation. \n"
-                              f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
-                              f" install instructions")
-            raise pytesseract.TesseractNotFoundError()
-    else:
-        return pytesseract.pytesseract.tesseract_cmd
 
 
 def create_menu():

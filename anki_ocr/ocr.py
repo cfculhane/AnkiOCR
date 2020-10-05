@@ -28,11 +28,15 @@ if ANKI_ENV is False:
 else:
     from aqt.progress import ProgressManager
     from ._vendor import pytesseract
+
     Image = None
     renderPM = None
     svg2rlg = None
     from .utils import tqdm_null_wrapper as tqdm
 
+from .utils import path_to_tesseract
+
+SCRIPT_DIR = Path(__file__).parent
 logging_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=logging_format, level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,15 +45,14 @@ logger = logging.getLogger(__name__)
 class OCR:
 
     def __init__(self, col: Collection, progress: Optional['ProgressManager'] = None,
-                 languages: Optional[List[str]] = None,
-                 tesseract_pth="tesseract"):
+                 languages: Optional[List[str]] = None):
         self.col = col
         self.media_dir = col.media.dir()
         self.progress = progress
         # ISO 639-2 Code, see https://www.loc.gov/standards/iso639-2/php/code_list.php
         self.languages = languages or ["eng"]
-        if tesseract_pth is not None:
-            pytesseract.pytesseract.tesseract_cmd = str(tesseract_pth)
+        tesseract_cmd, platform_name = path_to_tesseract()
+        pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
 
     def get_images_from_note(self, note):
         pattern = r'(?:<img src=")(.*?)(?:"(?:>|\B))'
@@ -225,6 +228,36 @@ class OCR:
             self.undo_convert_note_to_OCR(note_id=note_id)
         self.col.reset()
         logger.info("Databased saved and closed")
+
+    @staticmethod
+    def check_tesseract_install(addon_config):
+        from aqt.utils import showInfo, showCritical
+
+        tesseract_cmd, platform_name = path_to_tesseract()
+        pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
+
+        if addon_config.get("tesseract_install_valid") is not True:
+            try:
+                test_txt = pytesseract.image_to_string(str(Path(SCRIPT_DIR, "example.png")))
+                showInfo(
+                    f"Note that because this addon changes the note template, you will see a warning about changing the database and uploading to AnkiWeb. \n"
+                    f"This is normal, and will be shown each time you modify a note template.\n"
+                    f"Successfully checked for Tesseract on platform '{platform_name}\n"
+                    f"This message will be only be shown once.")
+                addon_config["tesseract_install_valid"] = True
+                mw.addonManager.writeConfig(__name__, addon_config)
+                return True
+
+            except pytesseract.TesseractNotFoundError:
+
+                addon_config["tesseract_install_valid"] = False
+                mw.addonManager.writeConfig(__name__, addon_config)
+                showCritical(text=f"Could not find a valid Tesseract-OCR installation. \n"
+                                  f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
+                                  f" install instructions")
+                raise pytesseract.TesseractNotFoundError()
+        else:
+            return False
 
 
 # %%
