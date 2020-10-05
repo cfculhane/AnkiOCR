@@ -22,6 +22,9 @@ This should be installed before going further, [install files can be found here]
 
 AnkiOCR was built on Python 3.8, but should work for Python versions >= 3.6.
 
+It is highly reccomended to to use inside the Anki application, by [installing the addon from AnkiWeb](https://ankiweb.net/shared/info/450181164)
+If you want to run it externally to anki, see below:
+
 Then clone the git repo:
 
 `git clone https://github.com/cfculhane/AnkiOCR`
