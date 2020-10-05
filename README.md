@@ -1,5 +1,8 @@
 # AnkiOCR
-OCR of images in anki cards
+
+Anki 2.1 addon to generate OCR text from images inside of Anki notes/cards. Note that this is only designed for computer generated text, not handwritten.
+
+The aim of this addon was to generate searchable text for image-heavy notes, it is not intended to produce high quality, perfectly ordered text!
 
 ## Usage
 

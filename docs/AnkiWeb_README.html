@@ -1,49 +1,51 @@
-<!--readme file for the AnkiWeb page-->
 <b>AnkiOCR</b>
 
-Anki 2.1 addon to generate OCR text from images inside of Anki notes/cards.
+Anki 2.1 addon to generate OCR text from images inside of Anki notes/cards. Note that this is only designed for computer generated text, not handwritten.
+
+The aim of this addon was to generate searchable text for image-heavy notes, it is not intended to produce high quality, perfectly ordered text!
 
 <b> Features </b>
 <ul>
     - Convert many notes at once
     - Undo changes very easily
     - Multilanguage support via configuration of detection languages
-
 </ul>
 
 This is currently in beta stage, please submit a bug report on GitHub if bugs are found, or you want to raise a feature request.
 
 <b>Installation</b>
 
-AnkiOCR depends on <a href="https://github.com/tesseract-ocr/tesseract">the Tesseract OCR library</a>.
+AnkiOCR depends on <a href="https://github.com/tesseract-ocr/tesseract" rel="nofollow">the Tesseract OCR library</a>.
 
-This should be installed before going further, <a href="https://tesseract-ocr.github.io/tessdoc/Home.html"> carefully
-    follow the instructions here</a>
-If you're on Windows, I have mirrored the install file,
-<a href="https://github.com/cfculhane/AnkiOCR/raw/master/deps/win/tesseract-ocr-w64-setup-v5.0.0-alpha.20200328.exe"> download here</a>
+This should be installed before going further, <a href="https://tesseract-ocr.github.io/tessdoc/Home.html" rel="nofollow"> carefully follow the instructions here</a>
+If you're on Windows, I have mirrored the install file, <a href="https://github.com/cfculhane/AnkiOCR/raw/master/deps/win/tesseract-ocr-w64-setup-v5.0.0-alpha.20200328.exe" rel="nofollow"> download here</a>
 
-If you install Tesseract to a non-standard location, you may need to update the path to the tesseract executable in the addon config (Tools -> Addons -> Config)
+If you install Tesseract to a non-standard location, you may need to update the path to the tesseract executable in the addon config (Tools -&gt; Addons -&gt; Config)
 
-Source code available at <a href="https://github.com/cfculhane/ankiOCR"> my GitHub</a>
+Source code available at <a href="https://github.com/cfculhane/ankiOCR" rel="nofollow"> my GitHub</a>
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY.
+This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY.
 
 <b>Usage</b>
 
 1. Open the card browser and select the note(s) you want to process. Use the search bar at the top, select tags, decks, etc.
 2. On the toolbar at the top, select 'Cards', then 'AnkiOCR', and select 'Run AnkiOCR on selected notes', as shown below
 
-<img src="https://raw.githubusercontent.com/cfculhane/AnkiOCR/master/docs/menu.png" alt=""/>
+<img src="https://raw.githubusercontent.com/cfculhane/AnkiOCR/master/docs/menu.png">
 
 3. After processing, the notes will be updated with an additional 'OCR' field with the extracted text, example below:
 
-<img src="https://raw.githubusercontent.com/cfculhane/AnkiOCR/master/docs/update_field.png" alt=""/>
+<img src="https://raw.githubusercontent.com/cfculhane/AnkiOCR/master/docs/update_field.png">
 
 4. If you want to remove the OCR field from any notes, select them and then use the "Remove OCR field from selected notes" option in the menu shown above
 
 <b> Known issues</b>
 <ul>
-    - Not any yet
+    - Will not work with handwritten text, this probably wont change as the library its based on is not optimised for handwritten text
 </ul>
 
 
+<b> Changelog </b>
+<ul>
+    - 0.1.0 - Initial Release
+</ul>
