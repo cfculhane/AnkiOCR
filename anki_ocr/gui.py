@@ -29,7 +29,7 @@ def on_run_ocr(browser: Browser):
         return
 
     progress = mw.progress
-    ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"], tesseract_pth=tesseract_pth)
+    ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"])
     progress.start(immediate=True, min=0, max=num_notes)
     ocr.run_ocr_on_notes(note_ids=selected_nids,
                          overwrite_existing=CONFIG["overwrite_existing"])
@@ -55,7 +55,7 @@ def on_rm_ocr_fields(browser: Browser):
 
     progress = mw.progress
     progress.start(immediate=True)
-    ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"], tesseract_pth=tesseract_pth)
+    ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"])
     ocr.remove_ocr_on_notes(note_ids=selected_nids)
     mw.progress.finish()
     browser.model.reset()
