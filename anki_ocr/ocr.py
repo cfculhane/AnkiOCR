@@ -81,8 +81,15 @@ class OCR:
             else:
                 # img = Image.open(img_data["path"])
                 img = str(img_data["path"].absolute())
+            try:
+                ocr_result = pytesseract.image_to_string(img, lang="+".join(self.languages))
+            except pytesseract.TesseractNotFoundError as errmsg:
+                from aqt.utils import showCritical
+                showCritical(text=f"Could not find a valid Tesseract-OCR installation! \n"
+                                  f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
+                                  f" install instructions")
+                raise pytesseract.TesseractNotFoundError()
 
-            ocr_result = pytesseract.image_to_string(img, lang="+".join(self.languages))
             ocr_result = "\n".join([line.strip() for line in ocr_result.splitlines() if line.strip() != ""])
             img_data["text"] = ocr_result
         return images
