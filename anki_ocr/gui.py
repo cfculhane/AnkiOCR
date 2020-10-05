@@ -84,8 +84,7 @@ def on_menu_setup(browser: Browser):
 
 def check_tesseract_install():
     tesseract_cmd, platform_name = path_to_tesseract()
-    if platform_name == "Windows":
-        pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
+    pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
 
     if CONFIG.get("tesseract_install_valid") is not True:
         try:
