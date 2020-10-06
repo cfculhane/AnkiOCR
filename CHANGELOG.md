@@ -1,6 +1,6 @@
 ## 0.3.0 - 2020-10-06
-- New method for storing the ocr text, now stores it in `title` attr of the img html tag
-- Handle old verions of Anki not having different progressbar.update()
+- New method for storing the OCR text, now stores it in `title` attr of the img html tag
+- Handle old versions of Anki not having different progressbar.update()
 
 ## 0.2.5 - 2020-10-06
 
