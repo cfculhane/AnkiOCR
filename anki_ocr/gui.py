@@ -1,4 +1,4 @@
-# import the main window object (mw) from aqt
+import logging
 
 from anki.hooks import addHook
 from aqt import mw
@@ -9,34 +9,34 @@ from aqt.utils import showInfo, askUser, showCritical
 from ._vendor import pytesseract
 from .ocr import OCR
 
-# We're going to add a menu item below. First we want to create a function to
-# be called when the menu item is activated.
-CONFIG = mw.addonManager.getConfig(__name__)
+logger = logging.getLogger(__name__)
 
 
 def on_run_ocr(browser: Browser):
     selected_nids = browser.selectedNotes()
     num_notes = len(selected_nids)
+    config = mw.addonManager.getConfig(__name__)
     if num_notes == 0:
         showInfo("No cards selected.")
         return
     elif askUser(f"Are you sure you wish to run OCR processing on {num_notes} notes?") is False:
         return
 
-    if CONFIG.get("tesseract_install_valid") is not True:
+    if config.get("tesseract_install_valid") is not True and config.get("text_output_location") == "new_field":
         showInfo(
             f"Note that because this addon changes the note template, you will see a warning about changing the database and uploading to AnkiWeb. \n"
             f"This is normal, and will be shown each time you modify a note template.\n"
             f"This message will be only be shown once.")
-        CONFIG["tesseract_install_valid"] = True
-        mw.addonManager.writeConfig(__name__, CONFIG)
+        mw.addonManager.writeConfig(__name__, config)
+
+    config["tesseract_install_valid"] = True  # Stop the above msg appearing multiple times
 
     progress = mw.progress
-    ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"])
+    ocr = OCR(col=mw.col, progress=progress, languages=config["languages"])
     progress.start(immediate=True, min=0, max=num_notes)
     try:
         ocr.run_ocr_on_notes(note_ids=selected_nids,
-                             overwrite_existing=CONFIG["overwrite_existing"])
+                             overwrite_existing=config["overwrite_existing"])
         progress.finish()
         showInfo(f"Processed OCR for {num_notes} cards")
 
@@ -55,6 +55,7 @@ def on_run_ocr(browser: Browser):
 
 
 def on_rm_ocr_fields(browser: Browser):
+    config = mw.addonManager.getConfig(__name__)
     selected_nids = browser.selectedNotes()
     num_notes = len(selected_nids)
     if num_notes == 0:
@@ -65,7 +66,7 @@ def on_rm_ocr_fields(browser: Browser):
 
     progress = mw.progress
     progress.start(immediate=True)
-    ocr = OCR(col=mw.col, progress=progress, languages=CONFIG["languages"])
+    ocr = OCR(col=mw.col, progress=progress, languages=config["languages"])
     ocr.remove_ocr_on_notes(note_ids=selected_nids)
     mw.progress.finish()
     browser.model.reset()
@@ -80,7 +81,7 @@ def on_menu_setup(browser: Browser):
     act_run_ocr.triggered.connect(lambda b=browser: on_run_ocr(browser))
     anki_ocr_menu.addAction(act_run_ocr)
 
-    act_rm_ocr_fields = QAction(browser, text="Remove OCR field from selected notes")
+    act_rm_ocr_fields = QAction(browser, text="Remove OCR data from selected notes")
     act_rm_ocr_fields.triggered.connect(lambda b=browser: on_rm_ocr_fields(browser))
     anki_ocr_menu.addAction(act_rm_ocr_fields)
 

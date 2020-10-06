@@ -128,3 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 anki_ocr/meta.json
+
+
+# other stuff
+/tests/User 1/

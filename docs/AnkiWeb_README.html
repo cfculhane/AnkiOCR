@@ -4,8 +4,6 @@ Anki 2.1 addon to generate OCR text from images inside of Anki notes/cards. <b>N
 
 The aim of this addon was to generate searchable text for image-heavy notes, it is not intended to produce high quality, perfectly ordered text!
 
-Note that because this addon changes the note template, you will see a warning about changing the database and uploading to AnkiWeb. This is normal.
-
 <b> Features </b>
 <ul>
     - Convert many notes at once
@@ -44,11 +42,11 @@ This program is distributed in the hope that it will be useful but WITHOUT ANY W
 
 <img src="https://raw.githubusercontent.com/cfculhane/AnkiOCR/master/docs/menu.png">
 
-3. After processing, the notes will be updated with an additional 'OCR' field with the extracted text, example below:
+3. After processing, each of the images in the note will have the ocr data embedded in the `title` html tag, viewable as a tooltip:
 
-<img src="https://raw.githubusercontent.com/cfculhane/AnkiOCR/master/docs/update_field.png">
+<img src="https://raw.githubusercontent.com/cfculhane/AnkiOCR/master/docs/text_tooltip.png">
 
-4. If you want to remove the OCR field from any notes, select them and then use the "Remove OCR field from selected notes" option in the menu shown above
+4. If you want to remove the OCR data from any notes, select them and then use the "Remove OCR data from selected notes" option in the menu shown above
 
 <b> Known issues</b>
 <ul>
@@ -59,6 +57,11 @@ This program is distributed in the hope that it will be useful but WITHOUT ANY W
 
 <b> Changelog </b>
 <ul>
+    - 0.3.0 - 2020-10-06
+        - New method for storing the ocr text, now stores it in title attr of the img html tag
+        - Handle old verions of Anki not having different progressbar.update()
+    - 0.2.6 - 2020-10-06
+        - Handle old verions of Anki not having different progressbar.update()
     - 0.2.5 - 2020-10-06
         - Add alternate import method for Collection due to API changes in Anki
     - 0.2.4 - 2020-10-05

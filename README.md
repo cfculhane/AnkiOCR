@@ -14,11 +14,13 @@ Note that because this addon changes the note template, you will see a warning a
 
 ![docs/menu.png](docs/menu.png) 
 
-3. After processing, the notes will be updated with an additional 'OCR' field with the extracted text, example below:
+3. After processing, each of the images in the note will have the ocr data embedded in the `title` html tag, viewable as a tooltip:
 
-![docs/update_field.png](docs/update_field.png) 
+![docs/text_tooltip.png](docs/text_tooltip.png) 
 
-4. If you want to remove the OCR field from any notes, select them and then use the "Remove OCR field from selected notes" option in the menu shown above
+4. If you want to remove the OCR data from any notes, select them and then use the "Remove OCR data from selected notes" option in the menu shown above
+
+If you wish to have the OCR data outputted to a seperate 'OCR' field on the note, which will modify your note types in your deck, you can set the `text_output_location` config option to `new_field`
 
 ## Installation
 

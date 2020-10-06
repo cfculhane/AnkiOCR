@@ -1,12 +1,9 @@
 import logging
 import platform
-import re
 import sys
 from copy import deepcopy
 from pathlib import Path
 from typing import Dict, Sequence, Optional, List
-
-import anki
 
 try:
     from anki.collection import Collection
@@ -22,13 +19,18 @@ else:  # anki.exe or equivalent
     ANKI_ENV = True
     print("Running in anki")
 
+SCRIPT_DIR = Path(__file__).parent
+DEPS_DIR = SCRIPT_DIR / "deps"
+
 if ANKI_ENV is False:
+    sys.path.append(SCRIPT_DIR)
     ProgressManager = None
     import pytesseract
     from PIL import Image
     from reportlab.graphics import renderPM
     from svglib.svglib import svg2rlg
     from tqdm import tqdm
+    from .html_parser import FieldHTMLParser
 
 else:
     from aqt.progress import ProgressManager
@@ -38,13 +40,10 @@ else:
     renderPM = None
     svg2rlg = None
     from .utils import tqdm_null_wrapper as tqdm
+    from .html_parser import FieldHTMLParser
 
-SCRIPT_DIR = Path(__file__).parent
-DEPS_DIR = SCRIPT_DIR / "deps"
-
-logging_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-logging.basicConfig(format=logging_format, level=logging.INFO)
 logger = logging.getLogger(__name__)
+FIELD_PARSER = FieldHTMLParser()
 
 
 class OCR:
@@ -62,43 +61,41 @@ class OCR:
         assert text_output_location in ["tooltip", "new_field"]
         self.text_output_location = text_output_location
 
-    def get_images_from_note(self, note):
-        pattern = r'(?:<img src=")(.*?)(?:"(?:>|\B))'
+    @staticmethod
+    def get_images_from_note(note):
         images = {}
         for field_name, field_content in note.items():
-            img_fnames = re.findall(pattern, field_content)
-            for img_fname in img_fnames:
-                images[Path(img_fname).stem] = {"path": Path(self.media_dir, img_fname),
-                                                "field": field_name}
+            images[field_name] = FIELD_PARSER.parse_images(field_content)
         return images
 
     def process_imgs(self, images: Dict):
-        for img_name, img_data in images.items():
-            logger.debug(f"Processing {img_data['path']} from field {img_data['field']}")
-            if img_data["path"].suffix == ".svg":
-                if ANKI_ENV is True:
-                    # TODO attempt to vendorize reportlab, svglib
-                    img_data["text"] = ""
-                    continue
+        for field_name, field_images in images.items():
+            for img_name, img_data in field_images.items():
+                logger.debug(f"Processing {img_name} from field {field_name}")
+                img_path = Path(self.media_dir, img_data["src"])
+                if img_path.suffix == ".svg":
+                    if ANKI_ENV is True:
+                        # TODO attempt to vendorize reportlab, svglib
+                        img_data["text"] = ""
+                        continue
+                    else:
+                        svg_draw = svg2rlg(str(img_path.absolute()))
+                        renderPM.drawToFile(svg_draw, "temp.png", fmt="PNG")
+                        img = Image.open("temp.png")
                 else:
-                    svg_draw = svg2rlg(str(img_data["path"].absolute()))
-                    renderPM.drawToFile(svg_draw, "temp.png", fmt="PNG")
-                    img = Image.open("temp.png")
-            else:
-                # img = Image.open(img_data["path"])
-                img = str(img_data["path"].absolute())
+                    # img = Image.open(img_path)
+                    img = str(img_path.absolute())
 
-            ocr_result = pytesseract.image_to_string(img, lang="+".join(self.languages))
-            ocr_result = "\n".join([line.strip() for line in ocr_result.splitlines() if line.strip() != ""])
-            img_data["text"] = ocr_result
+                ocr_result = pytesseract.image_to_string(img, lang="+".join(self.languages))
+                ocr_result = "\n".join([line.strip() for line in ocr_result.splitlines() if line.strip() != ""])
+                img_data["text"] = ocr_result
         return images
 
     @staticmethod
     def add_imgdata_to_note(note: Note, images: Dict, method="tooltip"):
         if method == "tooltip":
-            for img_name, img_data in images.items():
-                note[img_data["field"]] = note[img_data["field"]].replace(
-                    f'"{img_data["path"].name}"', f'"{img_data["path"].name}" title="{img_data["text"]}"')
+            for field_name, field_images in images.items():
+                note[field_name] = FIELD_PARSER.insert_ocr_text(images=field_images, field_text=note[field_name])
         elif method == "new_field":
             note["OCR"] = ""
             for img_name, img_data in images.items():
@@ -167,6 +164,11 @@ class OCR:
         # TODO Change this to process multiple note IDs at once?
         note = self.col.getNote(note_id)
         ocr_model = note.model()
+        images = self.get_images_from_note(note)
+        for field_name, field_text in note.items():
+            note[field_name] = FIELD_PARSER.remove_ocr_text(images[field_name], field_text)
+        note.flush()
+
         if self.is_OCR_note(note) is False:
             logger.info("Note is already NOT an OCR-type, no need to undo the conversion")
             return note
@@ -193,7 +195,11 @@ class OCR:
         # tqdm_out = TqdmToLogger(logger, level=logging.INFO)
         for i, note_id in tqdm(enumerate(note_ids), desc=f"Processing notes", total=len(note_ids)):
             if self.progress is not None:
-                self.progress.update(value=i, max=len(note_ids))
+                try:
+                    self.progress.update(value=i, max=len(note_ids))
+                except TypeError:  # old version of Qt/Anki
+                    pass
+
             note = self.col.getNote(note_id)
             if self.is_OCR_note(note) is True and overwrite_existing is False:
                 logger.info(f"Note id {note_id} is already processd. Set overwrite_existing=True to force reprocessing")
@@ -224,7 +230,7 @@ class OCR:
         # self.col.modSchema(check=True)
         self.ocr_process(note_ids=note_ids, overwrite_existing=overwrite_existing)
         self.col.reset()
-        logger.info("Databased saved and closed")
+        logger.info("Databased saved")
 
     def run_ocr_on_notes(self, note_ids: List[int], overwrite_existing=True):
         """ Main method for the ocr class. Runs OCR on a sequence of notes returned from a collection query.
@@ -255,23 +261,3 @@ class OCR:
 
         platform_name = platform.system()  # E.g. 'Windows'
         return exec_data[platform_name], platform_name
-
-
-# %%
-if __name__ == '__main__':
-    # Not to be run inside Anki
-    PROFILE_HOME = Path(r"C:\GitHub\anki\User 1")
-    cpath = PROFILE_HOME / "collection.anki2"
-    try:
-        collection = Collection(str(cpath), log=True)  # Collection is locked from here on
-    except anki.rsbackend.DBError:
-        print("Anki collection already open, attempting to continue")
-
-    ocr = OCR(col=collection)
-    QUERY = "tag:RG::MS::RG4.00_Lab"
-    QUERY = "tag:OCR"
-    # QUERY = ""
-    # ocr.run_ocr_on_query(QUERY)
-    # collection.close(save=True)
-    # note_ids_c = collection.findNotes(QUERY)
-    # ocr.remove_ocr_on_notes(note_ids_c)
