@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from anki.hooks import addHook
 from aqt import mw
@@ -32,7 +33,8 @@ def on_run_ocr(browser: Browser):
     config["tesseract_install_valid"] = True  # Stop the above msg appearing multiple times
 
     progress = mw.progress
-    ocr = OCR(col=mw.col, progress=progress, languages=config["languages"])
+    ocr = OCR(col=mw.col, progress=progress, languages=config["languages"],
+              text_output_location=config["text_output_location"])
     progress.start(immediate=True, min=0, max=num_notes)
     try:
         ocr.run_ocr_on_notes(note_ids=selected_nids,
@@ -45,10 +47,11 @@ def on_run_ocr(browser: Browser):
         showCritical(text=f"Could not find a valid Tesseract-OCR installation! \n"
                           f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
                           f" install instructions")
-    except Exception as errmsg:
+    except Exception as exc:
         progress.finish()
+        tb_str = traceback.format_exception(etype=type(exc), value=exc, tb=exc.__traceback__)
         showCritical(f"Error encountered during processing, attempting to stop AnkiOCR gracefully. Error below:\n"
-                     f"{errmsg}")
+                     f"{' '.join(tb_str)}")
     finally:
         browser.model.reset()
         mw.requireReset()

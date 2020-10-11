@@ -1,3 +1,7 @@
+## 0.3.1 - 2020-10-11
+- Config setting for `text_output_location` is now read properly when starting OCR class
+- More detailed exception readout when exception occurs during processing
+
 ## 0.3.0 - 2020-10-06
 - New method for storing the OCR text, now stores it in `title` attr of the img html tag
 - Handle old versions of Anki not having different progressbar.update()

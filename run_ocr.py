@@ -17,7 +17,7 @@ if __name__ == '__main__':
     except DBError:
         pass
 
-    ocr = OCR(col=collection)
+    ocr = OCR(col=collection, text_output_location="new_field")
     QUERY = "tag:RG::MS::RG4.00_Lab"
     QUERY = "tag:OCR"
     # QUERY = ""

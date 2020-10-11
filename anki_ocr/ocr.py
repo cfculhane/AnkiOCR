@@ -62,7 +62,7 @@ class OCR:
         self.text_output_location = text_output_location
 
     @staticmethod
-    def get_images_from_note(note):
+    def get_images_from_note(note: Note):
         images = {}
         for field_name, field_content in note.items():
             images[field_name] = FIELD_PARSER.parse_images(field_content)
@@ -98,9 +98,10 @@ class OCR:
                 note[field_name] = FIELD_PARSER.insert_ocr_text(images=field_images, field_text=note[field_name])
         elif method == "new_field":
             note["OCR"] = ""
-            for img_name, img_data in images.items():
-                if img_data['text'] != "":
-                    note["OCR"] += f"Image: {img_name}\n{'-' * 20}\n{img_data['text']}".replace('\n', '<br/>')
+            for field_name, field_images in images.items():
+                for img_name, img_data in field_images.items():
+                    if img_data['text'] != "":
+                        note["OCR"] += f"Image: {img_name}\n{'-' * 20}\n{img_data['text']}".replace('\n', '<br/>')
         else:
             raise ValueError(f"method {method} not valid. Only 'new_field' and 'tooltip' (default) are allowed.")
         note.flush()
