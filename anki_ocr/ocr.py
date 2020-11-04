@@ -4,6 +4,9 @@ import sys
 from copy import deepcopy
 from pathlib import Path
 from typing import Dict, Sequence, Optional, List
+from threading import Lock
+from concurrent.futures import ThreadPoolExecutor
+import time
 
 try:
     from anki.collection import Collection
@@ -68,11 +71,14 @@ class OCR:
             images[field_name] = FIELD_PARSER.parse_images(field_content)
         return images
 
-    def process_imgs(self, images: Dict):
+    # Since this will be multithreaded!
+    # To prevent possible side-effect from method
+    @staticmethod
+    def process_imgs(media_dir, languages, images: Dict):
         for field_name, field_images in images.items():
             for img_name, img_data in field_images.items():
                 logger.debug(f"Processing {img_name} from field {field_name}")
-                img_path = Path(self.media_dir, img_data["src"])
+                img_path = Path(media_dir, img_data["src"])
                 if img_path.suffix == ".svg":
                     if ANKI_ENV is True:
                         # TODO attempt to vendorize reportlab, svglib
@@ -86,7 +92,7 @@ class OCR:
                     # img = Image.open(img_path)
                     img = str(img_path.absolute())
 
-                ocr_result = pytesseract.image_to_string(img, lang="+".join(self.languages))
+                ocr_result = pytesseract.image_to_string(img, lang="+".join(languages))
                 ocr_result = "\n".join([line.strip() for line in ocr_result.splitlines() if line.strip() != ""])
                 img_data["text"] = ocr_result
         return images
@@ -192,34 +198,58 @@ class OCR:
 
     def ocr_process(self, note_ids: Sequence[int], overwrite_existing, save_every_n=50):
         logger.info(f"Processing {len(note_ids)} notes ...")
+        threadLock = Lock()
         # tqdm_out = TqdmToLogger(logger, level=logging.INFO)
-        for i, note_id in tqdm(enumerate(note_ids), desc=f"Processing notes", total=len(note_ids)):
-            if self.progress is not None:
-                try:
-                    self.progress.update(value=i, max=len(note_ids))
-                except TypeError:  # old version of Qt/Anki
-                    pass
 
-            note = self.col.getNote(note_id)
-            if self.is_OCR_note(note) is True and overwrite_existing is False:
-                logger.info(f"Note id {note_id} is already processd. Set overwrite_existing=True to force reprocessing")
-                continue
+        processedCount = 0
+        def task(note_id):
+            nonlocal processedCount
 
-            # Run this first, so that tesseract install is implicitly checked before modifying notes!
-            note_images = self.get_images_from_note(note)
-            note_images = self.process_imgs(images=note_images)
+            with threadLock:
+                processedCount += 1
+                note = self.col.getNote(note_id)
+                if self.is_OCR_note(note) is True and overwrite_existing is False:
+                    logger.info(f"Note id {note_id} is already processd. Set overwrite_existing=True to force reprocessing")
+                    return
 
-            if self.is_OCR_note(note) is False and self.text_output_location == "new_field":
-                note = self.convert_note_to_OCR(note_id)
+                # Run this first, so that tesseract install is implicitly checked before modifying notes!
+                note_images = self.get_images_from_note(note)
 
-            if len(note_images) > 0:
-                self.add_imgdata_to_note(note=note, images=note_images, method=self.text_output_location)
+            # This is a bottleneck that should be parallelized
+            note_images = OCR.process_imgs(self.media_dir, self.languages, images=note_images)
 
-            if i % save_every_n == 0:
-                self.col.save()
-            logger.debug(f"Added OCR data to note id {note_id}")
+            with threadLock:
+                if self.is_OCR_note(note) is False and self.text_output_location == "new_field":
+                    note = self.convert_note_to_OCR(note_id)
+
+                if len(note_images) > 0:
+                    self.add_imgdata_to_note(note=note, images=note_images, method=self.text_output_location)
+
+                if processedCount % save_every_n == 0:
+                    self.col.save()
+                logger.debug(f"Added OCR data to note id {note_id}")
+
+        with ThreadPoolExecutor() as executor:
+            executor.map(task, note_ids)
+
+            while True:
+                with threadLock:
+                    if processedCount == len(note_ids):
+                        break
+
+                    # progress.update should be called on the main thread only
+                    if self.progress is not None:
+                        try:
+                            self.progress.update(value=processedCount, max=len(note_ids))
+                        except TypeError:  # old version of Qt/Anki
+                            pass
+
+                time.sleep(0.5)
+
+
 
         self.col.save()
+
 
     def run_ocr_on_query(self, query: str, overwrite_existing=True):
         """ Main method for the ocr class. Runs OCR on a sequence of notes returned from a collection query.
