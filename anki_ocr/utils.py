@@ -4,10 +4,8 @@ from typing import List
 
 from anki import Collection
 from anki.notes import Note
-from .html_parser import FieldHTMLParser
 
 VENDOR_DIR = Path(__file__).parent / "_vendor"
-FIELD_PARSER = FieldHTMLParser()
 
 
 class TqdmNullWrapper:
@@ -17,6 +15,7 @@ class TqdmNullWrapper:
     def __iter__(self):
         for obj in self.iterable:
             yield obj
+
 
 # TODO use https://github.com/pydanny/cached-property
 
@@ -30,7 +29,7 @@ class OCRImage:
 @dataclass
 class FieldImages:
     field_name: str  # Not unique, as a field can contain multiple images
-    images: List['OCRImage'] = None
+    images: List[OCRImage] = None
 
 
 @dataclass
@@ -44,10 +43,11 @@ class NoteImages:
 
     @property
     def field_images(self) -> List[FieldImages]:
-
+        from .html_parser import FieldHTMLParser
+        field_parser = FieldHTMLParser()
         images = []
         for field_name, field_content in self.note.items():
-            images.append(FieldImages(field_name, images=FIELD_PARSER.parse_images(field_content)))
+            images.append(FieldImages(field_name, images=field_parser.parse_images(field_content)))
 
         return images
 

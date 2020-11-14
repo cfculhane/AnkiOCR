@@ -67,13 +67,6 @@ class OCR:
         assert text_output_location in ["tooltip", "new_field"]
         self.text_output_location = text_output_location
 
-    @staticmethod
-    def get_images_from_note(note: Note) -> NoteImages:
-        images = []
-        for field_name, field_content in note.items():
-            images.append(FieldImages(field_name, images=FIELD_PARSER.parse_images(field_content)))
-        return NoteImages(note_id=note.id, field_images=images)
-
     def process_imgs(self, query_images: QueryImages):
         for note_image in query_images.note_images:
             for field_image in note_image.field_images:

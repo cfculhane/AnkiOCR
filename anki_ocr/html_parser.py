@@ -3,7 +3,9 @@ from pathlib import Path
 from typing import List
 
 from bs4 import BeautifulSoup
-from .utils import FieldImages, OCRImage
+
+from .utils import OCRImage
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,14 +39,12 @@ class FieldHTMLParser:
         return str(soup)
 
 
-
-
 if __name__ == '__main__':
     parser = FieldHTMLParser()
     p_field_text = 'This is some extra text with an image below<div><img src="tmp3zud1urq.png"><br></div>'
     p_images = parser.parse_images(p_field_text)
     for img in p_images.values():
-        img["text"] = 'Lateral and Medial divisions\nTract\nLATERAL\n- Lateral corticospinal\n- Rubrospinal\nMEDIAL\n- Tecto-, vestibulospinal\n- Reticulospinal\n- Anterior corticospinal\nFunction\nFine control of distal musculature\nPrimary p/w for voluntary limb movements esp. precise\nmovements of hand and fingers\nBackup for corticospinal tract, movement velocity, learned\nmovements\nControl of axial and proximal musculature\nKeep head balanced on shoulders as the body navigates\nthrough space and head turns to stimuli\nModulate anti-gravity reflexes of the spinal cord; automatic\nposture and gait\nControl of trunk'
+        img[
+            "text"] = 'Lateral and Medial divisions\nTract\nLATERAL\n- Lateral corticospinal\n- Rubrospinal\nMEDIAL\n- Tecto-, vestibulospinal\n- Reticulospinal\n- Anterior corticospinal\nFunction\nFine control of distal musculature\nPrimary p/w for voluntary limb movements esp. precise\nmovements of hand and fingers\nBackup for corticospinal tract, movement velocity, learned\nmovements\nControl of axial and proximal musculature\nKeep head balanced on shoulders as the body navigates\nthrough space and head turns to stimuli\nModulate anti-gravity reflexes of the spinal cord; automatic\nposture and gait\nControl of trunk'
     modified_field = parser.insert_ocr_text(p_images, p_field_text)
     removed_field = parser.remove_ocr_text(p_images, p_field_text)
-

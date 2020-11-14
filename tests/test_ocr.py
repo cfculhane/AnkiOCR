@@ -5,6 +5,7 @@ import pytesseract
 from anki import Collection
 
 from anki_ocr.ocr import OCR
+from anki_ocr.utils import QueryImages
 
 TESTDATA_DIR = Path(__file__).parent / "testdata"
 COLLECTION = Collection(TESTDATA_DIR / "test_collection" / "collection.anki2")
@@ -30,7 +31,7 @@ class TestOCR:
         ocr_result = OCR.ocr_img(img)
         assert "Superior vena cava" in ocr_result
 
-    def test_process_imgs(self):
+    def test_gen_queryimages(self):
         ocr = OCR(col=COLLECTION)
-        ocr.get_images_from_note(COLLECTION.getNote(1605387657555))
-
+        q_images = QueryImages(col=COLLECTION, query="")
+        print(q_images)
