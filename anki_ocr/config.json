@@ -2,5 +2,7 @@
     "overwrite_existing": true,
     "languages": ["eng"],
     "tesseract_install_valid": null,
-    "text_output_location": "tooltip"
+    "text_output_location": "tooltip",
+    "override_tesseract_exec": false,
+    "tesseract_exec_path": ""
 }

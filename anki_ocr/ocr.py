@@ -39,7 +39,7 @@ else:
     Image = None
     renderPM = None
     svg2rlg = None
-    from .utils import tqdm_null_wrapper as tqdm
+    from .utils import TqdmNullWrapper as tqdm
     from .html_parser import FieldHTMLParser
 
 logger = logging.getLogger(__name__)
@@ -49,14 +49,15 @@ FIELD_PARSER = FieldHTMLParser()
 class OCR:
 
     def __init__(self, col: Collection, progress: Optional['ProgressManager'] = None,
-                 languages: Optional[List[str]] = None, text_output_location="tooltip"):
+                 languages: Optional[List[str]] = None, text_output_location="tooltip",
+                 tesseract_exec_pth: Optional[str] = None):
         self.col = col
         self.media_dir = col.media.dir()
         self.progress = progress
         # ISO 639-2 Code, see https://www.loc.gov/standards/iso639-2/php/code_list.php
         self.languages = languages or ["eng"]
 
-        tesseract_cmd, platform_name = self.path_to_tesseract()
+        tesseract_cmd = tesseract_exec_pth or self.path_to_tesseract()
         pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
         assert text_output_location in ["tooltip", "new_field"]
         self.text_output_location = text_output_location
@@ -255,10 +256,10 @@ class OCR:
         logger.info("Databased saved")
 
     @staticmethod
-    def path_to_tesseract():
+    def path_to_tesseract() -> str:
         exec_data = {"Windows": str(Path(DEPS_DIR, "win", "tesseract", "tesseract.exe")),
                      "Darwin": "/usr/local/bin/tesseract",
                      "Linux": "/usr/local/bin/tesseract"}
 
         platform_name = platform.system()  # E.g. 'Windows'
-        return exec_data[platform_name], platform_name
+        return exec_data[platform_name]

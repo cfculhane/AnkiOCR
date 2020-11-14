@@ -6,3 +6,5 @@ Please note that the following settings do not sync and require a restart to app
 - `languages` (list): Languages in [ISO639-2 format](https://www.loc.gov/standards/iso639-2/php/code_list.php) for the OCR to recognise. Default `["eng"]`
 - `tesseract_install_valid` (boolean): Flag for valid tesseract installation. Do not modify!
 - `text_output_location` (string): Where to put outputted text. "tooltip" is in a tooltip over the image "new_field" is in a new field. Default "tooltip"
+- `override_tesseract_exec` (boolean): If `true` , will allow the setting of the directory where the tesseract executable resides. Default `false`
+- `tesseract_exec_path` (string): Path to the tesseract executable, only used if `override_tesseract_exec` is `true` . Default "" (empty string)

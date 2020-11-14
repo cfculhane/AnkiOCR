@@ -34,7 +34,8 @@ def on_run_ocr(browser: Browser):
 
     progress = mw.progress
     ocr = OCR(col=mw.col, progress=progress, languages=config["languages"],
-              text_output_location=config["text_output_location"])
+              text_output_location=config["text_output_location"],
+              tesseract_exec_pth=config["tesseract_exec_path"] if config["override_tesseract_exec"] else None)
     progress.start(immediate=True, min=0, max=num_notes)
     try:
         ocr.run_ocr_on_notes(note_ids=selected_nids,

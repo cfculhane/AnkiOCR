@@ -3,7 +3,7 @@ from pathlib import Path
 VENDOR_DIR = Path(__file__).parent / "_vendor"
 
 
-class tqdm_null_wrapper:
+class TqdmNullWrapper:
     def __init__(self, iterable, **kwargs):
         self.iterable = iterable
 
