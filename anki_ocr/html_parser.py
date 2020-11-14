@@ -1,8 +1,9 @@
 import logging
 from pathlib import Path
+from typing import List
 
 from bs4 import BeautifulSoup
-
+from .utils import FieldImages, OCRImage
 logger = logging.getLogger(__name__)
 
 
@@ -10,12 +11,12 @@ class FieldHTMLParser:
     def __init__(self):
         pass
 
-    def parse_images(self, field_text):
+    def parse_images(self, field_text) -> List[OCRImage]:
         soup = BeautifulSoup(field_text, "html.parser")
-        images = {}
+        images = []
         for img in soup.find_all("img"):
             fname = Path(img["src"]).stem
-            images[fname] = img.attrs
+            images.append(OCRImage(name=fname, src=img.attrs["src"]))
         return images
 
     def insert_ocr_text(self, images, field_text):

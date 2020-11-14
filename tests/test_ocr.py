@@ -32,4 +32,5 @@ class TestOCR:
 
     def test_process_imgs(self):
         ocr = OCR(col=COLLECTION)
-        ocr.get_images_from_note(COLLECTION.getNote(0))
+        ocr.get_images_from_note(COLLECTION.getNote(1605387657555))
+

@@ -2,8 +2,9 @@ import logging
 import platform
 import sys
 from copy import deepcopy
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Sequence, Optional, List
+from typing import Dict, Sequence, Optional, List, Union
 
 try:
     from anki.collection import Collection
@@ -31,6 +32,7 @@ if ANKI_ENV is False:
     from svglib.svglib import svg2rlg
     from tqdm import tqdm
     from .html_parser import FieldHTMLParser
+    from .utils import NoteImages, FieldImages, OCRImage, QueryImages
 
 else:
     from aqt.progress import ProgressManager
@@ -40,10 +42,13 @@ else:
     renderPM = None
     svg2rlg = None
     from .utils import TqdmNullWrapper as tqdm
+    from .utils import NoteImages, FieldImages, OCRImage, QueryImages
     from .html_parser import FieldHTMLParser
 
 logger = logging.getLogger(__name__)
 FIELD_PARSER = FieldHTMLParser()
+
+
 
 
 class OCR:
@@ -63,34 +68,38 @@ class OCR:
         self.text_output_location = text_output_location
 
     @staticmethod
-    def get_images_from_note(note: Note):
-        images = {}
+    def get_images_from_note(note: Note) -> NoteImages:
+        images = []
         for field_name, field_content in note.items():
-            images[field_name] = FIELD_PARSER.parse_images(field_content)
-        return images
+            images.append(FieldImages(field_name, images=FIELD_PARSER.parse_images(field_content)))
+        return NoteImages(note_id=note.id, field_images=images)
 
-    def process_imgs(self, images: Dict):
-        for field_name, field_images in images.items():
-            for img_name, img_data in field_images.items():
-                logger.debug(f"Processing {img_name} from field {field_name}")
-                img_path = Path(self.media_dir, img_data["src"])
-                if img_path.suffix == ".svg":
-                    if ANKI_ENV is True:
-                        # TODO attempt to vendorize reportlab, svglib
-                        img_data["text"] = ""
-                        continue
+    def process_imgs(self, query_images: QueryImages):
+        for note_image in query_images.note_images:
+            for field_image in note_image.field_images:
+                for ocr_img in field_image.images:
+                    logger.debug(f"Processing {ocr_img.name} from field {field_image.field_name}")
+                    img_path = Path(self.media_dir, ocr_img.src)
+                    if img_path.suffix == ".svg":
+                        if ANKI_ENV is True:
+                            # TODO attempt to vendorize reportlab, svglib
+                            ocr_img.text = ""
+                            continue
+                        else:
+                            svg_draw = svg2rlg(str(img_path.absolute()))
+                            renderPM.drawToFile(svg_draw, "temp.png", fmt="PNG")
+                            img = Image.open("temp.png")
                     else:
-                        svg_draw = svg2rlg(str(img_path.absolute()))
-                        renderPM.drawToFile(svg_draw, "temp.png", fmt="PNG")
-                        img = Image.open("temp.png")
-                else:
-                    # img = Image.open(img_path)
-                    img = str(img_path.absolute())
+                        # img = Image.open(img_path)
+                        img = str(img_path.absolute())
+                    ocr_img.text = self.ocr_img(img=img, languages=self.languages)
+        return query_images
 
-                ocr_result = pytesseract.image_to_string(img, lang="+".join(self.languages))
-                ocr_result = "\n".join([line.strip() for line in ocr_result.splitlines() if line.strip() != ""])
-                img_data["text"] = ocr_result
-        return images
+    @staticmethod
+    def ocr_img(img: str, languages: List[str] = None) -> str:
+        """ Wrapper pytesseract.image_to_string with some basic str cleaning"""
+        ocr_result = pytesseract.image_to_string(img, lang="+".join(languages or ["eng"]))
+        return "n".join([line.strip() for line in ocr_result.splitlines() if line.strip() != ""])
 
     @staticmethod
     def add_imgdata_to_note(note: Note, images: Dict, method="tooltip"):
@@ -191,6 +200,11 @@ class OCR:
         self.col.models.save(m=orig_model)
         self.col.models.flush()
         return self.col.getNote(note_id)
+
+    def gen_query_images(self, query: str) -> QueryImages:
+        note_ids = self.col.findNotes(query=query)
+        return QueryImages(query=query, note_images=[NoteImages(note_id=nid) for nid in note_ids])
+
 
     def ocr_process(self, note_ids: Sequence[int], overwrite_existing, save_every_n=50):
         logger.info(f"Processing {len(note_ids)} notes ...")
