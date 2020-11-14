@@ -53,6 +53,9 @@ Create a venv, then once activated install requirements:
 
 `pip install -r requirements.txt`
 
+## Testing
+
+Ensure all requirements as above are install, then run `pytest`
 
 
 

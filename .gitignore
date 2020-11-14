@@ -132,3 +132,5 @@ anki_ocr/meta.json
 
 # other stuff
 /tests/User 1/
+/tests/reports/
+/tests/testdata/test_collection/backups/
