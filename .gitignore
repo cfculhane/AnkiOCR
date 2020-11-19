@@ -134,3 +134,4 @@ anki_ocr/meta.json
 /tests/User 1/
 /tests/reports/
 /tests/testdata/test_collection/backups/
+tests/ocr_scratch.py
