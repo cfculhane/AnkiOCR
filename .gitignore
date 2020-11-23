@@ -136,3 +136,4 @@ anki_ocr/meta.json
 /tests/testdata/test_collection/backups/
 tests/ocr_scratch.py
 /tests/testdata/test_collection/
+tests/testdata/test_collection_template/collection.anki2-wal
