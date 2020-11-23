@@ -1,61 +1,48 @@
+import concurrent
 import logging
 import platform
 import sys
-from copy import deepcopy
-from dataclasses import dataclass
+import tempfile
+from concurrent.futures import ThreadPoolExecutor
+from os import PathLike
 from pathlib import Path
-from typing import Dict, Sequence, Optional, List, Union
+from typing import Dict, Optional, List, Union, Tuple
 
 try:
     from anki.collection import Collection
 except ImportError:  # Older anki versions
     from anki.storage import Collection
 
-from anki.notes import Note
+from .api import OCRNote, NotesQuery, OCRImage
+from .utils import batch
 
-if "python" in Path(sys.executable).stem:
-    print("Not running in anki")
-    ANKI_ENV = False
-else:  # anki.exe or equivalent
-    ANKI_ENV = True
-    print("Running in anki")
+ANKI_ENV = "python" not in Path(sys.executable).stem
 
 SCRIPT_DIR = Path(__file__).parent
 DEPS_DIR = SCRIPT_DIR / "deps"
 
 if ANKI_ENV is False:
     sys.path.append(SCRIPT_DIR)
-    ProgressManager = None
     import pytesseract
-    from PIL import Image
-    from reportlab.graphics import renderPM
-    from svglib.svglib import svg2rlg
     from tqdm import tqdm
-    from .html_parser import FieldHTMLParser
-    from .utils import NoteImages, FieldImages, OCRImage, QueryImages
+
+    ProgressManager = None
 
 else:
     from aqt.progress import ProgressManager
     from ._vendor import pytesseract
 
-    Image = None
-    renderPM = None
-    svg2rlg = None
-    from .utils import TqdmNullWrapper as tqdm
-    from .utils import NoteImages, FieldImages, OCRImage, QueryImages
-    from .html_parser import FieldHTMLParser
+    tqdm = None
 
 logger = logging.getLogger(__name__)
-FIELD_PARSER = FieldHTMLParser()
-
-
+logger.debug(f"ANKI_ENV = {ANKI_ENV}")
 
 
 class OCR:
 
     def __init__(self, col: Collection, progress: Optional['ProgressManager'] = None,
                  languages: Optional[List[str]] = None, text_output_location="tooltip",
-                 tesseract_exec_pth: Optional[str] = None):
+                 tesseract_exec_pth: Optional[str] = None, num_threads: int = None):
         self.col = col
         self.media_dir = col.media.dir()
         self.progress = progress
@@ -66,190 +53,111 @@ class OCR:
         pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
         assert text_output_location in ["tooltip", "new_field"]
         self.text_output_location = text_output_location
+        self.num_threads = num_threads
 
-    def process_imgs(self, query_images: QueryImages):
-        for note_image in query_images.note_images:
-            for field_image in note_image.field_images:
-                for ocr_img in field_image.images:
-                    logger.debug(f"Processing {ocr_img.name} from field {field_image.field_name}")
-                    img_path = Path(self.media_dir, ocr_img.src)
-                    if img_path.suffix == ".svg":
-                        if ANKI_ENV is True:
-                            # TODO attempt to vendorize reportlab, svglib
-                            ocr_img.text = ""
-                            continue
-                        else:
-                            svg_draw = svg2rlg(str(img_path.absolute()))
-                            renderPM.drawToFile(svg_draw, "temp.png", fmt="PNG")
-                            img = Image.open("temp.png")
-                    else:
-                        # img = Image.open(img_path)
-                        img = str(img_path.absolute())
-                    ocr_img.text = self.ocr_img(img=img, languages=self.languages)
-        return query_images
+    def _ocr_process(self, notes_query: NotesQuery, batch_size=20):
+        # Split into batches and send each to a different tesseract process
+        # Note that the anki.Collection object cannot be accessed by multiple threads at once,
+        # So we need to run the OCR then join the results back into the notes afterwards in the main thread
 
-    @staticmethod
-    def ocr_img(img: str, languages: List[str] = None) -> str:
-        """ Wrapper pytesseract.image_to_string with some basic str cleaning"""
-        ocr_result = pytesseract.image_to_string(img, lang="+".join(languages or ["eng"]))
-        return "n".join([line.strip() for line in ocr_result.splitlines() if line.strip() != ""])
+        logger.info(f"Processing {len(notes_query)} notes ...")
+        batched_txts, batched_txts_dir, batch_mapping = self._gen_batched_txts(notes_to_process=notes_query.notes,
+                                                                               batch_size=batch_size)
 
-    @staticmethod
-    def add_imgdata_to_note(note: Note, images: Dict, method="tooltip"):
-        if method == "tooltip":
-            for field_name, field_images in images.items():
-                note[field_name] = FIELD_PARSER.insert_ocr_text(images=field_images, field_text=note[field_name])
-        elif method == "new_field":
-            note["OCR"] = ""
-            for field_name, field_images in images.items():
-                for img_name, img_data in field_images.items():
-                    if img_data['text'] != "":
-                        note["OCR"] += f"Image: {img_name}\n{'-' * 20}\n{img_data['text']}".replace('\n', '<br/>')
-        else:
-            raise ValueError(f"method {method} not valid. Only 'new_field' and 'tooltip' (default) are allowed.")
-        note.flush()
-        return note
+        raw_results = {}
+        num_batches = len(batched_txts)
+        pbar = tqdm(total=num_batches) if ANKI_ENV is False else None
 
-    @staticmethod
-    def is_OCR_note(note: Note) -> bool:
-        return note.model()["name"].endswith("_OCR")
+        with ThreadPoolExecutor() as executor:
+            # noinspection PyProtectedMember
+            logger.debug(f"Using {executor._max_workers} threads")
+            completed = 0
+            futures = {executor.submit(self._ocr_img, batched_img_txt): batched_img_txt for batched_img_txt in
+                       batched_txts}
 
-    @staticmethod
-    def create_OCR_notemodel(src_model: Dict):
-        assert src_model["name"].endswith("_OCR") is False
-        ocr_model = deepcopy(src_model)
-        ocr_model["name"] += "_OCR"
-        # if "OCR" not in ocr_model["flds"].
-        ocr_model["flds"].append(
-            {'name': 'OCR', 'ord': len(ocr_model["flds"]), 'sticky': False, 'rtl': False, 'font': 'Arial', 'size': 12,
-             'media': []})
-        ocr_model["tmpls"][0]["name"] += "_OCR"
-        return ocr_model
+            for future in concurrent.futures.as_completed(futures):
+                completed += 1
+                batched_img_txt = futures[future]
+                raw_results[batched_img_txt] = future.result()
+                if self.progress is not None:
+                    try:
+                        self.progress.update(value=completed, max=num_batches)
+                    except TypeError:  # old version of Qt/Anki
+                        pass
+                elif pbar is not None:
+                    pbar.update()
 
-    @staticmethod
-    def create_orig_notemodel(src_model: Dict):
-        assert src_model["name"].endswith("_OCR") is True
-        orig_model = deepcopy(src_model)
-        orig_model["name"] = orig_model["name"].replace("_OCR", "")
-        orig_model["flds"] = [fld for fld in orig_model["flds"] if fld["name"] != "OCR"]
-        orig_model["tmpls"][0]["name"] = orig_model["tmpls"][0]["name"].replace("_OCR", "")
-        return orig_model
+        ocr_images = self._process_results(batch_mapping, raw_results)
+        logger.info(f"Processed {len(ocr_images)} images in total")
+        # Post processing
+        for note in notes_query:
+            note.add_imgdata_to_note(method=self.text_output_location)
 
-    def add_model_to_db(self, ocr_model: Dict):
-        self.col.models.add(ocr_model)
-        self.col.models.save()
-        self.col.models.flush()
-
-    def convert_note_to_OCR(self, note_id: int) -> Note:
-        # TODO Change this to process multiple note IDs at once?
-        note = self.col.getNote(note_id)
-        orig_model = note.model()
-        if self.is_OCR_note(note):
-            logger.info("Note is already an OCR-type, no need to convert")
-            return note
-
-        ocr_model_name = orig_model["name"] + "_OCR"
-        if ocr_model_name in self.col.models.allNames():
-            logger.debug(f"Model already exists, using '{ocr_model_name}'")
-            ocr_model = self.col.models.byName(ocr_model_name)
-        else:
-            logger.info(f"Creating new model named '{ocr_model_name}'")
-            ocr_model = self.create_OCR_notemodel(note.model())
-            self.add_model_to_db(ocr_model=ocr_model)
-
-        field_mapping = {i: i for i in range(len(orig_model["flds"]))}
-        card_mapping = {i: i for i in range(len(note.cards()))}
-        self.col.models.change(orig_model, nids=[note.id], newModel=ocr_model, fmap=field_mapping, cmap=card_mapping)
-        self.col.models.save(m=ocr_model)
-        self.col.models.flush()
-        return self.col.getNote(note_id)
-
-    def undo_convert_note_to_OCR(self, note_id: int) -> Note:
-        # TODO Change this to process multiple note IDs at once?
-        note = self.col.getNote(note_id)
-        ocr_model = note.model()
-        images = self.get_images_from_note(note)
-        for field_name, field_text in note.items():
-            note[field_name] = FIELD_PARSER.remove_ocr_text(images[field_name], field_text)
-        note.flush()
-
-        if self.is_OCR_note(note) is False:
-            logger.info("Note is already NOT an OCR-type, no need to undo the conversion")
-            return note
-        ocr_model_name = ocr_model["name"]
-        orig_model_name = ocr_model_name.replace("_OCR", "")
-
-        if orig_model_name in self.col.models.allNames():
-            logger.debug(f"Original Model already exists, using '{orig_model_name}'")
-            orig_model = self.col.models.byName(orig_model_name)
-        else:
-            logger.info(f"Creating new (original) model named '{orig_model_name}'")
-            orig_model = self.create_orig_notemodel(note.model())
-            self.add_model_to_db(ocr_model=orig_model)
-
-        field_mapping = {i: i for i in range(len(orig_model["flds"]))}
-        card_mapping = {i: i for i in range(len(note.cards()))}
-        self.col.models.change(ocr_model, nids=[note.id], newModel=orig_model, fmap=field_mapping, cmap=card_mapping)
-        self.col.models.save(m=orig_model)
-        self.col.models.flush()
-        return self.col.getNote(note_id)
-
-    def gen_query_images(self, query: str) -> QueryImages:
-        note_ids = self.col.findNotes(query=query)
-        return QueryImages(query=query, note_images=[NoteImages(note_id=nid) for nid in note_ids])
-
-
-    def ocr_process(self, note_ids: Sequence[int], overwrite_existing, save_every_n=50):
-        logger.info(f"Processing {len(note_ids)} notes ...")
-        # tqdm_out = TqdmToLogger(logger, level=logging.INFO)
-        for i, note_id in tqdm(enumerate(note_ids), desc=f"Processing notes", total=len(note_ids)):
-            if self.progress is not None:
-                try:
-                    self.progress.update(value=i, max=len(note_ids))
-                except TypeError:  # old version of Qt/Anki
-                    pass
-
-            note = self.col.getNote(note_id)
-            if self.is_OCR_note(note) is True and overwrite_existing is False:
-                logger.info(f"Note id {note_id} is already processd. Set overwrite_existing=True to force reprocessing")
-                continue
-
-            # Run this first, so that tesseract install is implicitly checked before modifying notes!
-            note_images = self.get_images_from_note(note)
-            note_images = self.process_imgs(images=note_images)
-
-            if self.is_OCR_note(note) is False and self.text_output_location == "new_field":
-                note = self.convert_note_to_OCR(note_id)
-
-            if len(note_images) > 0:
-                self.add_imgdata_to_note(note=note, images=note_images, method=self.text_output_location)
-
-            if i % save_every_n == 0:
-                self.col.save()
-            logger.debug(f"Added OCR data to note id {note_id}")
-
+        batched_txts_dir.cleanup()
         self.col.save()
 
-    def run_ocr_on_query(self, query: str, overwrite_existing=True):
+    @staticmethod
+    def _process_results(batch_mapping: Dict[str, List[OCRImage]], results: Dict[str, str]):
+        split_char = u"\u000C"
+        ocr_images = []
+        for batch_txt, joined_results in results.items():
+            image_results = joined_results.split(split_char)
+            for ocr_image, img_result in zip(batch_mapping[batch_txt], image_results):
+                cleaned_text = "\n".join([line.strip() for line in img_result.splitlines() if line.strip() != ""])
+                ocr_image.text = cleaned_text
+                ocr_images.append(ocr_image)
+        return ocr_images
+
+    @staticmethod
+    def _gen_batched_txts(notes_to_process: List[OCRNote], batch_size: int) -> \
+            Tuple[List[str], tempfile.TemporaryDirectory, Dict[str, List[OCRImage]]]:
+
+        batched_txts_dir = tempfile.TemporaryDirectory()  # Need to return so we can cleanup later
+        batched_txts = []
+        batch_mapping = {}
+        images_to_process = []
+        for note_images in notes_to_process:
+            for fields in note_images.field_images:
+                for image in fields.images:
+                    images_to_process.append(image)
+
+        for batch_id, batched_imgs in enumerate(batch(images_to_process, batch_size)):
+            batch_txt_pth = Path(batched_txts_dir.name, f"batch_imgs_{batch_id}.txt")
+            batch_txt_pth.write_text("\n".join([str(i.img_pth) for i in batched_imgs]))
+            batched_txts.append(str(batch_txt_pth))
+            batch_mapping[str(batch_txt_pth)] = batched_imgs
+
+        return batched_txts, batched_txts_dir, batch_mapping
+
+    @staticmethod
+    def _ocr_img(img_pth: Union[Path, str, PathLike], languages: List[str] = None) -> str:
+        """ Wrapper for pytesseract.image_to_string"""
+        return pytesseract.image_to_string(str(img_pth), lang="+".join(languages or ["eng"]))
+
+    def run_ocr_on_query(self, query: str) -> NotesQuery:
         """ Main method for the ocr class. Runs OCR on a sequence of notes returned from a collection query.
 
         :param query: Query to collection, see https://docs.ankiweb.net/#/searching for more info.
         """
-        note_ids = self.col.findNotes(query=query)
+        notes_query = NotesQuery(col=self.col, query=query)
         # self.col.modSchema(check=True)
-        self.ocr_process(note_ids=note_ids, overwrite_existing=overwrite_existing)
+        self._ocr_process(notes_query=notes_query)
         self.col.reset()
         logger.info("Databased saved")
+        return notes_query
 
-    def run_ocr_on_notes(self, note_ids: List[int], overwrite_existing=True):
+    def run_ocr_on_notes(self, note_ids: List[int]) -> NotesQuery:
         """ Main method for the ocr class. Runs OCR on a sequence of notes returned from a collection query.
 
         :param note_ids: List of note ids
         """
         # self.col.modSchema(check=True)
-        self.ocr_process(note_ids=note_ids, overwrite_existing=overwrite_existing)
+        notes_query = NotesQuery(col=self.col, query="")
+        notes_query.note_images = [OCRNote(note_id=nid, col=self.col) for nid in note_ids]
+        self._ocr_process(notes_query=notes_query)
         self.col.reset()
         logger.info("Databased saved")
+        return notes_query
 
     def remove_ocr_on_notes(self, note_ids: List[int]):
         """ Removes the OCR field on a sequence of notes returned from a collection query.
@@ -257,8 +165,10 @@ class OCR:
         :param note_ids: List of note ids
         """
         # self.col.modSchema(check=True)
-        for note_id in note_ids:
-            self.undo_convert_note_to_OCR(note_id=note_id)
+        query_notes = NotesQuery(col=self.col, query="")
+        query_notes.note_images = [OCRNote(note_id=nid, col=self.col) for nid in note_ids]
+        for note in query_notes:
+            note.remove_OCR_text()
         self.col.reset()
         logger.info("Databased saved")
 

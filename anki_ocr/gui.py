@@ -38,10 +38,9 @@ def on_run_ocr(browser: Browser):
               tesseract_exec_pth=config["tesseract_exec_path"] if config["override_tesseract_exec"] else None)
     progress.start(immediate=True, min=0, max=num_notes)
     try:
-        ocr.run_ocr_on_notes(note_ids=selected_nids,
-                             overwrite_existing=config["overwrite_existing"])
+        ocr.run_ocr_on_notes(note_ids=selected_nids)
         progress.finish()
-        showInfo(f"Processed OCR for {num_notes} cards")
+        showInfo(f"Processed OCR for {num_notes} notes")
 
     except pytesseract.TesseractNotFoundError:
         progress.finish()
