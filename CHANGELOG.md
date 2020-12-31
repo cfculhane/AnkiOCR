@@ -1,3 +1,9 @@
+## 0.4.0 - 2020-12-31
+- Major feature update, now is multithreaded for roughly a 10x speed improvement
+- Complete refactor of code for  readibility and maintability
+- Addition of basic unit tests for OCR section of codebase
+- Improved progress bar messaging
+
 ## 0.3.1 - 2020-10-11
 - Config setting for `text_output_location` is now read properly when starting OCR class
 - More detailed exception readout when exception occurs during processing
