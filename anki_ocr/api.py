@@ -145,6 +145,9 @@ class OCRNote:
             self.col.models.save(m=orig_model)
             self.col.models.flush()
             note = self.note
+            note.flush()
+            self.field_images = self._get_field_images()
+
 
         for field_img in self.field_images:
             print("Removing OCR text from title attr")

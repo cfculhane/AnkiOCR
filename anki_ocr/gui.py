@@ -1,5 +1,6 @@
 import logging
 import traceback
+from math import ceil
 
 from anki.hooks import addHook
 from aqt import mw
@@ -15,8 +16,10 @@ logger = logging.getLogger(__name__)
 
 def on_run_ocr(browser: Browser):
     selected_nids = browser.selectedNotes()
-    num_notes = len(selected_nids)
     config = mw.addonManager.getConfig(__name__)
+    num_notes = len(selected_nids)
+    num_batches = ceil(num_notes / config["batch_size"])
+
     if num_notes == 0:
         showInfo("No cards selected.")
         return
@@ -28,15 +31,21 @@ def on_run_ocr(browser: Browser):
             f"Note that because this addon changes the note template, you will see a warning about changing the database and uploading to AnkiWeb. \n"
             f"This is normal, and will be shown each time you modify a note template.\n"
             f"This message will be only be shown once.")
-        mw.addonManager.writeConfig(__name__, config)
 
     config["tesseract_install_valid"] = True  # Stop the above msg appearing multiple times
+    mw.addonManager.writeConfig(__name__, config)
 
     progress = mw.progress
+    progress.start(immediate=True, min=0, max=num_batches)
+    try:
+        progress.update(value=0, max=num_batches, label="Starting OCR processing...")
+    except TypeError:  # old version of Qt/Anki
+        pass
+
     ocr = OCR(col=mw.col, progress=progress, languages=config["languages"],
               text_output_location=config["text_output_location"],
-              tesseract_exec_pth=config["tesseract_exec_path"] if config["override_tesseract_exec"] else None)
-    progress.start(immediate=True, min=0, max=num_notes)
+              tesseract_exec_pth=config["tesseract_exec_path"] if config["override_tesseract_exec"] else None,
+              batch_size=config["batch_size"])
     try:
         ocr.run_ocr_on_notes(note_ids=selected_nids)
         progress.finish()

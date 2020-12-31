@@ -2,10 +2,15 @@ import itertools
 import logging
 import time
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, List
 
 VENDOR_DIR = Path(__file__).parent / "_vendor"
 logger = logging.getLogger(__name__)
+
+
+def format_note_id_query(note_ids: List[int]) -> str:
+    """Generates an anki db query string from a list of note ids"""
+    return f"{' OR '.join([f'nid:{nid}' for nid in note_ids])}"
 
 
 def batch(it: Iterable, batch_size: int):

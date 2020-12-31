@@ -14,7 +14,7 @@ except ImportError:  # Older anki versions
     from anki.storage import Collection
 
 from .api import OCRNote, NotesQuery, OCRImage
-from .utils import batch
+from .utils import batch, format_note_id_query
 
 ANKI_ENV = "python" not in Path(sys.executable).stem
 
@@ -42,7 +42,7 @@ class OCR:
 
     def __init__(self, col: Collection, progress: Optional['ProgressManager'] = None,
                  languages: Optional[List[str]] = None, text_output_location="tooltip",
-                 tesseract_exec_pth: Optional[str] = None, num_threads: int = None):
+                 tesseract_exec_pth: Optional[str] = None, num_threads: int = None, batch_size: int = 20):
         self.col = col
         self.media_dir = col.media.dir()
         self.progress = progress
@@ -54,15 +54,17 @@ class OCR:
         assert text_output_location in ["tooltip", "new_field"]
         self.text_output_location = text_output_location
         self.num_threads = num_threads
+        self.batch_size = batch_size
 
-    def _ocr_process(self, notes_query: NotesQuery, batch_size=20):
+    def _ocr_process(self, notes_query: NotesQuery):
         # Split into batches and send each to a different tesseract process
         # Note that the anki.Collection object cannot be accessed by multiple threads at once,
         # So we need to run the OCR then join the results back into the notes afterwards in the main thread
 
         logger.info(f"Processing {len(notes_query)} notes ...")
+        # Note that there might be multiple images per note, so num_batches != batch_size * num_notes
         batched_txts, batched_txts_dir, batch_mapping = self._gen_batched_txts(notes_to_process=notes_query.notes,
-                                                                               batch_size=batch_size)
+                                                                               batch_size=self.batch_size)
 
         raw_results = {}
         num_batches = len(batched_txts)
@@ -72,7 +74,8 @@ class OCR:
             # noinspection PyProtectedMember
             logger.debug(f"Using {executor._max_workers} threads")
             completed = 0
-            futures = {executor.submit(self._ocr_img, batched_img_txt): batched_img_txt for batched_img_txt in
+            futures = {executor.submit(self._ocr_img, batched_img_txt, self.languages): batched_img_txt for
+                       batched_img_txt in
                        batched_txts}
 
             for future in concurrent.futures.as_completed(futures):
@@ -81,11 +84,18 @@ class OCR:
                 raw_results[batched_img_txt] = future.result()
                 if self.progress is not None:
                     try:
-                        self.progress.update(value=completed, max=num_batches)
+                        self.progress.update(value=completed, max=num_batches,
+                                             label=f"Running OCR... ({round(100 * completed / num_batches)} %)")
                     except TypeError:  # old version of Qt/Anki
                         pass
                 elif pbar is not None:
                     pbar.update()
+
+        if self.progress is not None:
+            try:
+                self.progress.update(value=1, max=1, label=f"Processing OCR Results... ")
+            except TypeError:  # old version of Qt/Anki
+                pass
 
         ocr_images = self._process_results(batch_mapping, raw_results)
         logger.info(f"Processed {len(ocr_images)} images in total")
@@ -152,8 +162,8 @@ class OCR:
         :param note_ids: List of note ids
         """
         # self.col.modSchema(check=True)
-        notes_query = NotesQuery(col=self.col, query="")
-        notes_query.note_images = [OCRNote(note_id=nid, col=self.col) for nid in note_ids]
+        notes_query = NotesQuery(col=self.col, query=format_note_id_query(note_ids))
+        # notes_query.note_images = [OCRNote(note_id=nid, col=self.col) for nid in note_ids]
         self._ocr_process(notes_query=notes_query)
         self.col.reset()
         logger.info("Databased saved")
@@ -165,8 +175,7 @@ class OCR:
         :param note_ids: List of note ids
         """
         # self.col.modSchema(check=True)
-        query_notes = NotesQuery(col=self.col, query="")
-        query_notes.note_images = [OCRNote(note_id=nid, col=self.col) for nid in note_ids]
+        query_notes = NotesQuery(col=self.col, query=format_note_id_query(note_ids))
         for note in query_notes:
             note.remove_OCR_text()
         self.col.reset()
