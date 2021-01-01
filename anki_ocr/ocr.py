@@ -8,6 +8,8 @@ from os import PathLike
 from pathlib import Path
 from typing import Dict, Optional, List, Union, Tuple
 
+from aqt.utils import askUser
+
 try:
     from anki.collection import Collection
 except ImportError:  # Older anki versions
@@ -42,7 +44,7 @@ class OCR:
 
     def __init__(self, col: Collection, progress: Optional['ProgressManager'] = None,
                  languages: Optional[List[str]] = None, text_output_location="tooltip",
-                 tesseract_exec_pth: Optional[str] = None, num_threads: int = None, batch_size: int = 20):
+                 tesseract_exec_pth: Optional[str] = None, num_threads: int = None, batch_size: int = 5):
         self.col = col
         self.media_dir = col.media.dir()
         self.progress = progress
@@ -60,15 +62,15 @@ class OCR:
         # Split into batches and send each to a different tesseract process
         # Note that the anki.Collection object cannot be accessed by multiple threads at once,
         # So we need to run the OCR then join the results back into the notes afterwards in the main thread
-
         logger.info(f"Processing {len(notes_query)} notes ...")
         # Note that there might be multiple images per note, so num_batches != batch_size * num_notes
-        batched_txts, batched_txts_dir, batch_mapping = self._gen_batched_txts(notes_to_process=notes_query.notes,
-                                                                               batch_size=self.batch_size)
+        batched_txts, batched_txts_dir, batch_mapping, images_to_process = \
+            self._gen_batched_txts(notes_to_process=notes_query.notes, batch_size=self.batch_size)
 
         raw_results = {}
         num_batches = len(batched_txts)
         pbar = tqdm(total=num_batches) if ANKI_ENV is False else None
+        want_cancel = False
 
         with ThreadPoolExecutor() as executor:
             # noinspection PyProtectedMember
@@ -83,19 +85,18 @@ class OCR:
                 batched_img_txt = futures[future]
                 raw_results[batched_img_txt] = future.result()
                 if self.progress is not None:
-                    try:
-                        self.progress.update(value=completed, max=num_batches,
-                                             label=f"Running OCR... ({round(100 * completed / num_batches)} %)")
-                    except TypeError:  # old version of Qt/Anki
-                        pass
+                    self.progress.update(value=completed, max=num_batches,
+                                         label=f"Running OCR... ({round(100 * completed / num_batches)} %)")
+                    want_cancel = self.progress.want_cancel()
+                    if want_cancel is True:
+                        if askUser(f"Cancel processing?") is True:
+                            for future_to_cancel in futures:
+                                future_to_cancel.cancel()
+                            raise RuntimeError("Cancelled futures")
+                        else:
+                            self.progress._win.wantCancel = False
                 elif pbar is not None:
                     pbar.update()
-
-        if self.progress is not None:
-            try:
-                self.progress.update(value=1, max=1, label=f"Processing OCR Results... ")
-            except TypeError:  # old version of Qt/Anki
-                pass
 
         ocr_images = self._process_results(batch_mapping, raw_results)
         logger.info(f"Processed {len(ocr_images)} images in total")
@@ -120,7 +121,7 @@ class OCR:
 
     @staticmethod
     def _gen_batched_txts(notes_to_process: List[OCRNote], batch_size: int) -> \
-            Tuple[List[str], tempfile.TemporaryDirectory, Dict[str, List[OCRImage]]]:
+            Tuple[List[str], tempfile.TemporaryDirectory, Dict[str, List[OCRImage]], List[OCRImage]]:
 
         batched_txts_dir = tempfile.TemporaryDirectory()  # Need to return so we can cleanup later
         batched_txts = []
@@ -137,7 +138,7 @@ class OCR:
             batched_txts.append(str(batch_txt_pth))
             batch_mapping[str(batch_txt_pth)] = batched_imgs
 
-        return batched_txts, batched_txts_dir, batch_mapping
+        return batched_txts, batched_txts_dir, batch_mapping, images_to_process
 
     @staticmethod
     def _ocr_img(img_pth: Union[Path, str, PathLike], languages: List[str] = None) -> str:

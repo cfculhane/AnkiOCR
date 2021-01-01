@@ -1,3 +1,8 @@
+## 0.4.1 - 2021-01-01
+- Reduced batch_size default to 10 to improve the progress bar updating frequency and feel of speed
+- added total time readout to final message on completion
+- added ability to cancel during processing
+
 ## 0.4.0 - 2020-12-31
 - Major feature update, now is multithreaded for roughly a 10x speed improvement
 - Complete refactor of code for  readibility and maintability

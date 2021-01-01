@@ -1,4 +1,5 @@
 import logging
+import time
 import traceback
 from math import ceil
 
@@ -15,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 def on_run_ocr(browser: Browser):
+    time_start = time.time()
+
     selected_nids = browser.selectedNotes()
     config = mw.addonManager.getConfig(__name__)
     num_notes = len(selected_nids)
@@ -35,12 +38,12 @@ def on_run_ocr(browser: Browser):
     config["tesseract_install_valid"] = True  # Stop the above msg appearing multiple times
     mw.addonManager.writeConfig(__name__, config)
 
-    progress = mw.progress
-    progress.start(immediate=True, min=0, max=num_batches)
     try:
+        progress = mw.progress
+        progress.start(immediate=True, min=0, max=num_batches)
         progress.update(value=0, max=num_batches, label="Starting OCR processing...")
     except TypeError:  # old version of Qt/Anki
-        pass
+        progress = None
 
     ocr = OCR(col=mw.col, progress=progress, languages=config["languages"],
               text_output_location=config["text_output_location"],
@@ -48,16 +51,26 @@ def on_run_ocr(browser: Browser):
               batch_size=config["batch_size"])
     try:
         ocr.run_ocr_on_notes(note_ids=selected_nids)
-        progress.finish()
-        showInfo(f"Processed OCR for {num_notes} notes")
+        if progress:
+            progress.finish()
+        time_taken = time.time() - time_start
+        showInfo(
+            f"Processed OCR for {num_notes} notes in {round(time_taken, 1)}s ({round(time_taken / num_notes, 1)}s per note)")
 
     except pytesseract.TesseractNotFoundError:
-        progress.finish()
+        if progress:
+            progress.finish()
         showCritical(text=f"Could not find a valid Tesseract-OCR installation! \n"
                           f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
                           f" install instructions")
+    except RuntimeError:
+        if progress:
+            progress.finish()
+            showInfo("Cancelled OCR processing.")
+
     except Exception as exc:
-        progress.finish()
+        if progress:
+            progress.finish()
         tb_str = traceback.format_exception(etype=type(exc), value=exc, tb=exc.__traceback__)
         showCritical(f"Error encountered during processing, attempting to stop AnkiOCR gracefully. Error below:\n"
                      f"{' '.join(tb_str)}")
