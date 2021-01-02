@@ -1,8 +1,12 @@
-# Some basic tests to make sure major breaking changes dont occur
+# Performance testing
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).absolute().parent.parent))
+
 import os
 import tempfile
 import time
-from pathlib import Path
 from typing import List, Tuple
 
 import pytesseract
