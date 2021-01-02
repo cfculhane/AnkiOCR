@@ -42,13 +42,13 @@ class TestOCR:
     def test_ocr_img_with_lang(self):
         img_path = self.test_img_pths[0]
         img = str(img_path.absolute())
-        ocr_result = OCR._ocr_img(img, languages=["eng"])
+        ocr_result = OCR._ocr_img(img, num_threads=1, languages=["eng"])
         assert "Superior vena cava" in ocr_result
 
     def test_ocr_img_without_lang(self):
         img_path = self.test_img_pths[0]
         img = str(img_path.absolute())
-        ocr_result = OCR._ocr_img(img)
+        ocr_result = OCR._ocr_img(img, num_threads=1)
         assert "Superior vena cava" in ocr_result
 
     def test_gen_queryimages(self, tmpdir):
@@ -76,10 +76,28 @@ class TestOCR:
         ocr.run_ocr_on_query(query="")
 
 
-    def test_run_ocr_on_notes(self, tmpdir):
+    def test_run_ocr_on_notes_batched_multithreaded(self, tmpdir):
         col_dir = tmpdir.mkdir("collection")
         test_col = gen_test_collection(col_dir)
-        ocr = OCR(col=test_col)
+        ocr = OCR(col=test_col, use_batching=True, num_threads=4)
+        ocr.run_ocr_on_notes(note_ids=[1601851571572, 1601851621708])
+
+    def test_run_ocr_on_notes_batched_single_threaded(self, tmpdir):
+        col_dir = tmpdir.mkdir("collection")
+        test_col = gen_test_collection(col_dir)
+        ocr = OCR(col=test_col, use_batching=True, num_threads=1)
+        ocr.run_ocr_on_notes(note_ids=[1601851571572, 1601851621708])
+
+    def test_run_ocr_on_notes_unbatched_multithreaded(self, tmpdir):
+        col_dir = tmpdir.mkdir("collection")
+        test_col = gen_test_collection(col_dir)
+        ocr = OCR(col=test_col, use_batching=False, num_threads=4)
+        ocr.run_ocr_on_notes(note_ids=[1601851571572, 1601851621708])
+
+    def test_run_ocr_on_notes_unbatched_singlethreaded(self, tmpdir):
+        col_dir = tmpdir.mkdir("collection")
+        test_col = gen_test_collection(col_dir)
+        ocr = OCR(col=test_col, use_batching=False, num_threads=1)
         ocr.run_ocr_on_notes(note_ids=[1601851571572, 1601851621708])
 
     def test_add_ocr_field_then_remove_text_tooltip(self, tmpdir):

@@ -48,7 +48,8 @@ def on_run_ocr(browser: Browser):
     ocr = OCR(col=mw.col, progress=progress, languages=config["languages"],
               text_output_location=config["text_output_location"],
               tesseract_exec_pth=config["tesseract_exec_path"] if config["override_tesseract_exec"] else None,
-              batch_size=config["batch_size"])
+              batch_size=config["batch_size"], num_threads=config["num_threads"], use_batching=config["use_batching"],
+              use_multithreading=config["use_multithreading"])
     try:
         ocr.run_ocr_on_notes(note_ids=selected_nids)
         if progress:
@@ -63,10 +64,11 @@ def on_run_ocr(browser: Browser):
         showCritical(text=f"Could not find a valid Tesseract-OCR installation! \n"
                           f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
                           f" install instructions")
-    except RuntimeError:
+    except RuntimeError as exc:
         if progress:
             progress.finish()
-            showInfo("Cancelled OCR processing.")
+            showInfo(f"Cancelled OCR processing with message : \n"
+                     f"{traceback.format_exception(etype=type(exc), value=exc, tb=exc.__traceback__)}")
 
     except Exception as exc:
         if progress:
