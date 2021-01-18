@@ -2,6 +2,7 @@ import concurrent
 import logging
 import os
 import platform
+import re
 import sys
 import tempfile
 from concurrent.futures.thread import ThreadPoolExecutor
@@ -177,6 +178,16 @@ class OCR:
         return raw_results
 
     @staticmethod
+    def clean_ocr_text(ocr_text: str) -> str:
+        """
+        :param ocr_text: Text output from tesseract
+        :returns: Cleaned text with extraneous newlines and double colon's removed
+        """
+        cleaned_text = "\n".join([line.strip() for line in ocr_text.splitlines() if line.strip() != ""])
+        cleaned_text = re.sub(":+", ":", cleaned_text)
+        return cleaned_text
+
+    @staticmethod
     def _process_batched_results(batch_mapping: Dict[str, List[OCRImage]], results: Dict[str, str]) -> List[OCRImage]:
         split_char = u"\u000C"
         ocr_images = []
@@ -288,15 +299,8 @@ class OCR:
         :param note_ids: List of note ids
         """
         # self.col.modSchema(check=True)
-        notes_query = NotesQuery(col=self.col, query=format_note_id_query(note_ids))
-        # notes_query.note_images = [OCRNote(note_id=nid, col=self.col) for nid in note_ids]
-        if self.use_batching:
-            self._ocr_batch_process(notes_query=notes_query)
-
-        else:
-            self._ocr_unbatched_process(notes_query=notes_query)
-        self.col.reset()
-        logger.info("Databased saved")
+        query_str = format_note_id_query(note_ids=note_ids)
+        notes_query = self.run_ocr_on_query(query=query_str)
         return notes_query
 
     def remove_ocr_on_notes(self, note_ids: List[int]):

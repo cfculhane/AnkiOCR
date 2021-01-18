@@ -1,12 +1,12 @@
 {
-    "overwrite_existing": true,
+    "batch_size": 5,
     "languages": ["eng"],
+    "num_threads": 2
+    "override_tesseract_exec": false,
+    "overwrite_existing": true,
+    "tesseract_exec_path": "",
     "tesseract_install_valid": null,
     "text_output_location": "tooltip",
-    "override_tesseract_exec": false,
-    "tesseract_exec_path": "",
-    "batch_size": 5,
     "use_batching": true,
     "use_multithreading": true,
-    "num_threads": null
 }

@@ -1,6 +1,8 @@
-## 0.4.2 - 2021-01-02
+## 0.4.2 - 2021-01-19
 - Add `num_threads` config option to allow manual setting of number of threads
 - Add `use_batching` config option to allow disabling of batching for those for which  this causes performance issues
+- Added more unit tests to releasing new versions
+- Fixed an issue where OCR text containing "::" would break clozes, now cleans duplicate colons in text
 
 ## 0.4.1 - 2021-01-01
 - Reduced batch_size default to 5 to improve the progress bar updating frequency and feel of speed

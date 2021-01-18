@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.append(str(Path(__file__).absolute().parent.parent))
 
 import os
@@ -41,6 +43,7 @@ def gen_batched_txts(img_pths: List[Path], batch_size: int) -> Tuple[List[Path],
     return batched_txts, batched_txts_dir
 
 
+@pytest.mark.skip
 class TestPerformance:
     test_img_pths = list(Path(TESTDATA_DIR, "annotated_imgs").glob("*"))
     tesseract_cmd = OCR.path_to_tesseract()

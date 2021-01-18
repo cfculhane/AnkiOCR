@@ -115,3 +115,13 @@ class TestOCR:
         note_ids = [1601851571572, 1601851621708]
         ocr.run_ocr_on_notes(note_ids=note_ids)
         ocr.remove_ocr_on_notes(note_ids=note_ids)
+
+    def test_clean_ocr_text(self):
+        input_str = "this is some text: with a result\n\n\nThis is some double colon :: with result" \
+                     "\n\nwithout spaces::new word\none space:: new word\n\n\n\none space before ::new word\n" \
+                     "triple ::: new word\n\n\n\n\nquadruple ::::newword"""
+        expected_output = "this is some text: with a result\nThis is some double colon : with result\n" \
+                          "without spaces:new word\none space: new word\none space before :new word\n" \
+                          "triple : new word\nquadruple :newword"
+        output = OCR.clean_ocr_text(input_str)
+        assert output == expected_output
