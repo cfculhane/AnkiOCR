@@ -1,7 +1,7 @@
 {
     "batch_size": 5,
     "languages": ["eng"],
-    "num_threads": 2
+    "num_threads": 2,
     "override_tesseract_exec": false,
     "overwrite_existing": true,
     "tesseract_exec_path": "",

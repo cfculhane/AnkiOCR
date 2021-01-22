@@ -1,3 +1,6 @@
+## 0.4.3 - 2021-01-22
+- Hotfix for config.json syntax error
+
 ## 0.4.2 - 2021-01-19
 - Add `num_threads` config option to allow manual setting of number of threads
 - Add `use_batching` config option to allow disabling of batching for those for which  this causes performance issues
