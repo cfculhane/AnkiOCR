@@ -24,9 +24,10 @@ ANKI_ENV = "python" not in Path(sys.executable).stem
 
 SCRIPT_DIR = Path(__file__).parent
 DEPS_DIR = SCRIPT_DIR / "deps"
+TESSDATA_DIR = DEPS_DIR / "tessdata"
 
 if ANKI_ENV is False:
-    sys.path.append(SCRIPT_DIR)
+    sys.path.append(str(SCRIPT_DIR.absolute()))
     import pytesseract
     from tqdm import tqdm
 
@@ -255,8 +256,10 @@ class OCR:
                 os.unsetenv("OMP_THREAD_LIMIT")
             except:
                 pass
+        tessdata_config = f'--tessdata-dir "{TESSDATA_DIR.absolute()}"'
 
-        return pytesseract.image_to_string(str(img_pth), lang="+".join(languages or ["eng"]))
+        return pytesseract.image_to_string(str(img_pth), lang="+".join(languages or ["eng"]),
+                                           config=tessdata_config)
 
     def run_ocr_on_query(self, query: str) -> NotesQuery:
         """ Main method for the ocr class. Runs OCR on a sequence of notes returned from a collection query.
@@ -318,8 +321,10 @@ class OCR:
     @staticmethod
     def path_to_tesseract() -> str:
         exec_data = {"Windows": str(Path(DEPS_DIR, "win", "tesseract", "tesseract.exe")),
-                     "Darwin": "/usr/local/bin/tesseract",
+                     "Darwin": str(Path(DEPS_DIR, "mac", "tesseract", "4.1.1", "bin", "tesseract")),
                      "Linux": "/usr/local/bin/tesseract"}
 
         platform_name = platform.system()  # E.g. 'Windows'
         return exec_data[platform_name]
+
+
