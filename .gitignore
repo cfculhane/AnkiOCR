@@ -140,3 +140,4 @@ tests/testdata/test_collection_template/collection.anki2-wal
 anki_ocr/meta.json
 .idea/
 
+tests/testdata/batch_imgs/imgs.txt
