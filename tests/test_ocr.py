@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 import pytesseract
+import pytest
 from anki import Collection
 
 from anki_ocr.api import NotesQuery
@@ -30,7 +31,10 @@ def gen_test_collection(new_dir) -> Collection:
 
 
 class TestOCR:
-    test_img_pths = list(Path(TESTDATA_DIR, "annotated_imgs").glob("*"))
+    all_img_files = list(Path(TESTDATA_DIR, "annotated_imgs").glob("*"))
+    img_pths = sorted([f for f in all_img_files if f.suffix in [".png", ".jpg", ".tiff", ".tif", ".jpeg"]])
+    annot_pths = sorted([f for f in all_img_files if f.suffix == ".txt"])
+    assert len(img_pths) == len(annot_pths)
     tesseract_cmd = OCR.path_to_tesseract()
     pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
 
@@ -39,17 +43,19 @@ class TestOCR:
         test_col = gen_test_collection(col_dir)
         assert test_col.basicCheck()
 
-    def test_ocr_img_with_lang(self):
-        img_path = self.test_img_pths[0]
-        img = str(img_path.absolute())
-        ocr_result = OCR._ocr_img(img, num_threads=1, languages=["eng"])
-        assert "Superior vena cava" in ocr_result
+    @pytest.mark.parametrize(["img_pth", "expected"], [(i, a) for i, a in zip(img_pths, annot_pths)])
+    def test_ocr_img_with_lang(self, img_pth, expected):
+        img = str(img_pth.absolute())
+        ocr_result = OCR._ocr_img(img, num_threads=1, languages=["eng"]).strip()
+        expected = expected.read_text().strip()
+        assert ocr_result == expected
 
-    def test_ocr_img_without_lang(self):
-        img_path = self.test_img_pths[0]
-        img = str(img_path.absolute())
+
+    @pytest.mark.parametrize(["img_pth", "expected"], [(i, a) for i, a in zip(img_pths, annot_pths)])
+    def test_ocr_img_without_lang(self, img_pth, expected):
+        img = str(img_pth.absolute())
         ocr_result = OCR._ocr_img(img, num_threads=1)
-        assert "Superior vena cava" in ocr_result
+        assert expected.read_text() in ocr_result
 
     def test_gen_queryimages(self, tmpdir):
         col_dir = tmpdir.mkdir("collection")
@@ -74,7 +80,6 @@ class TestOCR:
         test_col = gen_test_collection(col_dir)
         ocr = OCR(col=test_col)
         ocr.run_ocr_on_query(query="")
-
 
     def test_run_ocr_on_notes_batched_multithreaded(self, tmpdir):
         col_dir = tmpdir.mkdir("collection")
@@ -118,8 +123,8 @@ class TestOCR:
 
     def test_clean_ocr_text(self):
         input_str = "this is some text: with a result\n\n\nThis is some double colon :: with result" \
-                     "\n\nwithout spaces::new word\none space:: new word\n\n\n\none space before ::new word\n" \
-                     "triple ::: new word\n\n\n\n\nquadruple ::::newword"""
+                    "\n\nwithout spaces::new word\none space:: new word\n\n\n\none space before ::new word\n" \
+                    "triple ::: new word\n\n\n\n\nquadruple ::::newword"""
         expected_output = "this is some text: with a result\nThis is some double colon : with result\n" \
                           "without spaces:new word\none space: new word\none space before :new word\n" \
                           "triple : new word\nquadruple :newword"

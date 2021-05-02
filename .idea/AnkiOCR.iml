@@ -11,6 +11,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tests/reports" />
       <excludeFolder url="file://$MODULE_DIR$/tests/testdata/test_collection" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/tesseract_standalone" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.8 (AnkiOCR)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
