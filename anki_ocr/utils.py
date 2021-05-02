@@ -32,11 +32,6 @@ def create_ocr_logger():
     return ocr_logger
 
 
-def format_note_id_query(note_ids: List[int]) -> str:
-    """Generates an anki db query string from a list of note ids"""
-    return f"{' OR '.join([f'nid:{nid}' for nid in note_ids])}"
-
-
 def batch(it: Iterable, batch_size: int):
     """Batches an Iterable into batches of at most batch_size in length"""
     it = iter(it)

@@ -218,12 +218,12 @@ class OCRNote:
 class NotesQuery:
     """ Represents a collection of Notes from a query of the Collection db"""
     col: Collection
-    query: str = ""
+    note_ids: List[int]
     notes: List[OCRNote] = None
     notes_to_process: List[OCRNote] = None
 
     def __post_init__(self):
-        self.notes = [OCRNote(note_id=nid, col=self.col) for nid in self.col.findNotes(query=self.query)]
+        self.notes = [OCRNote(note_id=nid, col=self.col) for nid in self.note_ids]
 
     def __len__(self):
         return len(self.notes)

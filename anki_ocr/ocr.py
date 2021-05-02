@@ -18,7 +18,7 @@ except ImportError:  # Older anki versions
     from anki.storage import Collection
 
 from .api import OCRNote, NotesQuery, OCRImage
-from .utils import batch, format_note_id_query
+from .utils import batch
 
 ANKI_ENV = "python" not in Path(sys.executable).stem
 
@@ -260,12 +260,12 @@ class OCR:
         return pytesseract.image_to_string(str(img_pth), lang="+".join(languages or ["eng"]),
                                            config=tessdata_config)
 
-    def run_ocr_on_query(self, query: str) -> NotesQuery:
+    def run_ocr_on_query(self, note_ids: List[int]) -> NotesQuery:
         """ Main method for the ocr class. Runs OCR on a sequence of notes returned from a collection query.
 
-        :param query: Query to collection, see https://docs.ankiweb.net/#/searching for more info.
+        :param note_ids: Note id's to process
         """
-        notes_query = NotesQuery(col=self.col, query=query)
+        notes_query = NotesQuery(col=self.col, note_ids=note_ids)
         # self.col.modSchema(check=True)
         if self.use_batching:
             logger.info(f"Processing {len(notes_query)} notes with _ocr_batch_process() ...")
@@ -301,8 +301,7 @@ class OCR:
         :param note_ids: List of note ids
         """
         # self.col.modSchema(check=True)
-        query_str = format_note_id_query(note_ids=note_ids)
-        notes_query = self.run_ocr_on_query(query=query_str)
+        notes_query = self.run_ocr_on_query(note_ids=note_ids)
         return notes_query
 
     def remove_ocr_on_notes(self, note_ids: List[int]):
@@ -311,7 +310,7 @@ class OCR:
         :param note_ids: List of note ids
         """
         # self.col.modSchema(check=True)
-        query_notes = NotesQuery(col=self.col, query=format_note_id_query(note_ids))
+        query_notes = NotesQuery(col=self.col, note_ids=note_ids)
         for note in query_notes:
             note.remove_OCR_text()
         self.col.reset()
@@ -325,5 +324,3 @@ class OCR:
 
         platform_name = platform.system()  # E.g. 'Windows'
         return exec_data[platform_name]
-
-

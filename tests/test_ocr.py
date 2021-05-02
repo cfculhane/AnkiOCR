@@ -8,7 +8,6 @@ from anki import Collection
 
 from anki_ocr.api import NotesQuery
 from anki_ocr.ocr import OCR
-from anki_ocr.utils import format_note_id_query
 
 TESTDATA_DIR = Path(__file__).parent / "testdata"
 TEMPLATE_COLLECTION_PTH = TESTDATA_DIR / "test_collection_template" / "collection.anki2"
@@ -65,7 +64,8 @@ class TestOCR:
         col_dir = tmpdir.mkdir("collection")
         test_col = gen_test_collection(col_dir)
         ocr = OCR(col=test_col)
-        q_images = NotesQuery(col=test_col, query="")
+        all_note_ids = ocr.col.db.list("select * from notes")
+        q_images = NotesQuery(col=test_col, note_ids=all_note_ids)
         print(q_images)
 
     def test_query_noteids(self, tmpdir):
@@ -73,8 +73,7 @@ class TestOCR:
         test_col = gen_test_collection(col_dir)
         ocr = OCR(col=test_col)
         note_ids = [1601851621708, 1601851571572]
-        query = format_note_id_query(note_ids)
-        q_images = NotesQuery(col=test_col, query=query)
+        q_images = NotesQuery(col=test_col, note_ids=note_ids)
         assert len(q_images.notes) == 2
         for note in q_images.notes:
             assert note.note_id in note_ids
@@ -83,7 +82,8 @@ class TestOCR:
         col_dir = tmpdir.mkdir("collection")
         test_col = gen_test_collection(col_dir)
         ocr = OCR(col=test_col)
-        ocr.run_ocr_on_query(query="")
+        all_note_ids = ocr.col.db.list("select * from notes")
+        ocr.run_ocr_on_query(note_ids=all_note_ids)
 
     def test_run_ocr_on_notes_batched_multithreaded(self, tmpdir):
         col_dir = tmpdir.mkdir("collection")
