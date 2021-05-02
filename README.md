@@ -26,21 +26,11 @@ If you wish to have the OCR data outputted to a seperate 'OCR' field on the note
 
 AnkiOCR depends on [the Tesseract OCR library](https://github.com/tesseract-ocr/tesseract).
 
-If you're on **Windows**, this is included in the addon.
-
-If you're on **Mac**, the recommended approach is to install [Homebrew](https://brew.sh/), open terminal and run the command
-
-`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"`
-
-After this, run the command
-
-`brew install tesseract`
-
-A mac install script is being worked on, but for now use the above instructions.
+If you're on **Windows** or **Mac**, tesseract is bundled with the addon.
 
 If you're on **Linux** [carefully follow the instructions here](https://tesseract-ocr.github.io/tessdoc/Home.html)
 
-AnkiOCR was built on Python 3.8, but should work for Python versions >= 3.6.
+AnkiOCR was built on Python 3.8, but should work for Python versions >= 3.7.
 
 It is highly recommended to to use inside the Anki application, by [installing the addon from AnkiWeb](https://ankiweb.net/shared/info/450181164)
 If you want to run it externally to anki, see below:
@@ -56,6 +46,3 @@ Create a venv, then once activated install requirements:
 ## Testing
 
 Ensure all requirements as above are install, then run `pytest`
-
-
-

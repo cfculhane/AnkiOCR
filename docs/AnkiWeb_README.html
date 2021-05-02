@@ -17,17 +17,7 @@ This is currently in beta stage, please submit a bug report on GitHub if bugs ar
 
 AnkiOCR depends on <a href="https://github.com/tesseract-ocr/tesseract" rel="nofollow">the Tesseract OCR library</a>.
 
-If you're on <b>Windows</b>, this is included in the addon.
-If you're on <b>Mac</b>, the reccomended approach is to install <a href="https://brew.sh/" rel="nofollow">Homebrew</a>.
-Open terminal and run the command
-
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-
-After this, run the command
-
-brew install tesseract
-
-A mac install script is being worked on, but for now use the above instructions.
+If you're on <b>Windows</b> or <b>Mac</b>, teseract is bundled with the addon
 
 If you're on <b>Linux</b> <a href="https://tesseract-ocr.github.io/tessdoc/Home.html" rel="nofollow"> carefully follow the instructions here</a>
 
@@ -57,6 +47,13 @@ This program is distributed in the hope that it will be useful but WITHOUT ANY W
 
 <b> Changelog </b>
 <ul>
+    - 0.5.0 - 2021-05-02
+        - Added bundled tesseract for Mac, no longer any need to install it seperately
+        - Split out `tessdata` to its own folder, allowing easier installation of new languages
+        - Change in the way note ID's are processed, no longer limited to 1000 cards
+        - Fixed issue causing a crash in anki versions > 2.1.40
+        - Added some log text that will appear when invalid notes are encountered during a processing run
+
     - 0.4.3 - 2021-01-22
         - Hotfix for config.json syntax error
     - 0.4.2 - 2021-01-19
@@ -94,7 +91,7 @@ This program is distributed in the hope that it will be useful but WITHOUT ANY W
     - 0.2.1 - 2020-10-05
         - HOTFIX for Fixing tesseract executable detection
     - 0.2.0 - 2020-10-05
-        - Now packaged with windows binaries for Tesseract-OCR, no install neccesary!
+        - Now packaged with windows binaries for Tesseract-OCR, no install necessary!
         - Added flag in config.json to indicate valid tesseract exec
         - Updates to README to reflect above changes
 

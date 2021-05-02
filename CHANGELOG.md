@@ -1,3 +1,10 @@
+## 0.5.0 - 2021-05-02
+- Added bundled tesseract for Mac, no longer any need to install it seperately
+- Split out `tessdata` to its own folder, allowing easier installation of new languages
+- Change in the way note ID's are processed, no longer limited to 1000 cards
+- Fixed issue causing a crash in anki versions > 2.1.40
+- Added some log text that will appear when invalid notes are encountered during a processing run
+
 ## 0.4.3 - 2021-01-22
 - Hotfix for config.json syntax error
 

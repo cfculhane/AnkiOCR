@@ -9,7 +9,7 @@ from anki.notes import Note
 from bs4 import BeautifulSoup
 
 VENDOR_DIR = Path(__file__).parent / "_vendor"
-logger = logging.getLogger("anki_ocr")
+logger = logging.getLogger(__name__)
 
 
 # TODO potentially use https://github.com/pydanny/cached-property ?

@@ -26,9 +26,6 @@ def on_run_ocr(browser: Browser):
     if num_notes == 0:
         showInfo("No cards selected.")
         return
-    elif num_notes > 1000:
-        showInfo("Due to Anki Database limitations, AnkiOCR cannot process more than 1000 notes at once.")
-        return
     elif askUser(f"Are you sure you wish to run OCR processing on {num_notes} notes?") is False:
         return
 
