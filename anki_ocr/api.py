@@ -9,7 +9,7 @@ from anki.notes import Note
 from bs4 import BeautifulSoup
 
 VENDOR_DIR = Path(__file__).parent / "_vendor"
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("anki_ocr")
 
 
 # TODO potentially use https://github.com/pydanny/cached-property ?
@@ -46,11 +46,22 @@ class OCRField:
         images = []
         for img in soup.find_all("img"):
             img_pth = Path(img["src"])
+            full_pth = Path(self.media_dir, img_pth)
+            try:
+                if full_pth.exists() is False:
+                    logger.warning(f"For note id {self.note_id}, image path {img_pth} does not exist in media dir")
+                    continue
+            except OSError:
+                logger.warning(f"For note id {self.note_id}, image path {img_pth} is invalid")
+                continue
+
             if img_pth.suffix in self.allowed_img_formats:
-                images.append(OCRImage(name=img_pth.stem, src=img.attrs["src"], media_dir=self.media_dir, note_id=self.note_id,
+
+                images.append(OCRImage(name=img_pth.stem, src=img.attrs["src"],
+                                       media_dir=self.media_dir, note_id=self.note_id,
                                        field_name=self.field_name))
             else:
-                logger.debug(f"Ignoring unsupported image: {img_pth}")
+                logger.debug(f"For note id {self.note_id}, ignoring unsupported image: {img_pth}")
 
         return images
 
@@ -147,7 +158,6 @@ class OCRNote:
             note = self.note
             note.flush()
             self.field_images = self._get_field_images()
-
 
         for field_img in self.field_images:
             print("Removing OCR text from title attr")

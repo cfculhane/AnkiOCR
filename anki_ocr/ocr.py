@@ -38,8 +38,7 @@ else:
 
     tqdm = None
 
-logger = logging.getLogger(__name__)
-logger.debug(f"ANKI_ENV = {ANKI_ENV}")
+logger = logging.getLogger("anki_ocr")
 
 
 class OCR:

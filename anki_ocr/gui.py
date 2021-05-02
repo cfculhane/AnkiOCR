@@ -1,4 +1,3 @@
-import logging
 import time
 import traceback
 from math import ceil
@@ -11,8 +10,9 @@ from aqt.utils import showInfo, askUser, showCritical
 
 from ._vendor import pytesseract
 from .ocr import OCR
+from .utils import create_ocr_logger
 
-logger = logging.getLogger(__name__)
+logger = create_ocr_logger()
 
 
 def on_run_ocr(browser: Browser):
@@ -25,6 +25,9 @@ def on_run_ocr(browser: Browser):
 
     if num_notes == 0:
         showInfo("No cards selected.")
+        return
+    elif num_notes > 1000:
+        showInfo("Due to Anki Database limitations, AnkiOCR cannot process more than 1000 notes at once.")
         return
     elif askUser(f"Are you sure you wish to run OCR processing on {num_notes} notes?") is False:
         return
@@ -45,7 +48,9 @@ def on_run_ocr(browser: Browser):
     except TypeError:  # old version of Qt/Anki
         progress = None
 
-    ocr = OCR(col=mw.col, progress=progress, languages=config["languages"],
+    ocr = OCR(col=mw.col,
+              progress=progress,
+              languages=config["languages"],
               text_output_location=config["text_output_location"],
               tesseract_exec_pth=config["tesseract_exec_path"] if config["override_tesseract_exec"] else None,
               batch_size=config["batch_size"], num_threads=config["num_threads"], use_batching=config["use_batching"],
@@ -55,8 +60,10 @@ def on_run_ocr(browser: Browser):
         if progress:
             progress.finish()
         time_taken = time.time() - time_start
+        log_messages = logger.handlers[0].flush()
         showInfo(
-            f"Processed OCR for {num_notes} notes in {round(time_taken, 1)}s ({round(time_taken / num_notes, 1)}s per note)")
+            f"Processed OCR for {num_notes} notes in {round(time_taken, 1)}s ({round(time_taken / num_notes, 1)}s per note)\n"
+            f"{log_messages}")
 
     except pytesseract.TesseractNotFoundError:
         if progress:
@@ -77,6 +84,7 @@ def on_run_ocr(browser: Browser):
         showCritical(f"Error encountered during processing, attempting to stop AnkiOCR gracefully. Error below:\n"
                      f"{' '.join(tb_str)}")
     finally:
+
         browser.model.reset()
         mw.requireReset()
 
@@ -98,7 +106,9 @@ def on_rm_ocr_fields(browser: Browser):
     mw.progress.finish()
     browser.model.reset()
     mw.requireReset()
-    showInfo(f"Removed the OCR field from {num_notes} cards")
+    log_messages = logger.handlers[0].flush()
+    showInfo(f"Removed the OCR field from {num_notes} cards\n"
+             f"{log_messages}")
 
 
 def on_menu_setup(browser: Browser):

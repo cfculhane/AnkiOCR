@@ -1,11 +1,35 @@
 import itertools
 import logging
 import time
+from logging.handlers import MemoryHandler
 from pathlib import Path
 from typing import Iterable, List
 
 VENDOR_DIR = Path(__file__).parent / "_vendor"
-logger = logging.getLogger(__name__)
+
+logger = logging.getLogger("anki_ocr")
+
+
+class AnkiOCRLogger(MemoryHandler):
+
+    def flush(self) -> str:
+        log_message = ""
+        if len(self.buffer) > 0:
+            messages = "\n\n".join([msg.getMessage() for msg in self.buffer])
+            log_message = f"\n{'-'*50}\nLog messages encountered during OCR processing: \n\n{messages}"
+            self.buffer = []
+        try:
+            self.release()
+        except RuntimeError:
+            pass
+        return log_message
+
+
+def create_ocr_logger():
+    ocr_logger = logging.getLogger("anki_ocr")
+    ocr_logger.addHandler(AnkiOCRLogger(capacity=2000, flushLevel=logging.CRITICAL))
+    ocr_logger.setLevel(logging.WARNING)
+    return ocr_logger
 
 
 def format_note_id_query(note_ids: List[int]) -> str:
