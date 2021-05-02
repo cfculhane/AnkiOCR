@@ -7,6 +7,6 @@ from . import gui
 
 gui.create_menu()
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 TEST_DIR = Path(__file__).parent.parent / "tests"
 TESTDATA_DIR = TEST_DIR / "testdata"

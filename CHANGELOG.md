@@ -1,3 +1,6 @@
+## 0.5.1 - 2021-05-02
+- Hotfix to include accidentally gitignored tesseract mac libs
+
 ## 0.5.0 - 2021-05-02
 - Added bundled tesseract for Mac, no longer any need to install it seperately
 - Split out `tessdata` to its own folder, allowing easier installation of new languages

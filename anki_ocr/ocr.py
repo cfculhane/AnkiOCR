@@ -3,6 +3,7 @@ import logging
 import os
 import platform
 import re
+import subprocess
 import sys
 import tempfile
 from concurrent.futures.thread import ThreadPoolExecutor
@@ -53,6 +54,7 @@ class OCR:
         # ISO 639-2 Code, see https://www.loc.gov/standards/iso639-2/php/code_list.php
         self.languages = languages or ["eng"]
 
+        self.set_tesseract_exe_permission()
         tesseract_cmd = tesseract_exec_pth or self.path_to_tesseract()
         pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
         assert text_output_location in ["tooltip", "new_field"]
@@ -324,3 +326,9 @@ class OCR:
 
         platform_name = platform.system()  # E.g. 'Windows'
         return exec_data[platform_name]
+
+    def set_tesseract_exe_permission(self):
+        tess_pth = self.path_to_tesseract()
+        if platform.system() == "Darwin":
+            logger.info(f"Setting +x permission to {tess_pth}")
+            subprocess.Popen(["chmod", "+x", tess_pth])
