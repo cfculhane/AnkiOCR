@@ -1,1 +1,5 @@
-lib/libtesseract.4.dylib
+Localisation issues
+« It is essential that OCR tool supports lanugage
+in which documents are written
+— testing sholud be done to prove reliabilty
+— result documented and available for legal review
