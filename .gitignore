@@ -141,3 +141,6 @@ anki_ocr/meta.json
 .idea/
 
 tests/testdata/batch_imgs/imgs.txt
+
+# Tesseract lib
+!anki_ocr/deps/mac/tesseract/4.1.1/lib
