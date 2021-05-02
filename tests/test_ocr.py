@@ -34,6 +34,7 @@ class TestOCR:
     all_img_files = list(Path(TESTDATA_DIR, "annotated_imgs").glob("*"))
     img_pths = sorted([f for f in all_img_files if f.suffix in [".png", ".jpg", ".tiff", ".tif", ".jpeg"]])
     annot_pths = sorted([f for f in all_img_files if f.suffix == ".txt"])
+    annot_txts = [f.read_text(encoding="utf-8") for f in annot_pths]
     assert len(img_pths) == len(annot_pths)
     tesseract_cmd = OCR.path_to_tesseract()
     pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
@@ -43,19 +44,22 @@ class TestOCR:
         test_col = gen_test_collection(col_dir)
         assert test_col.basicCheck()
 
-    @pytest.mark.parametrize(["img_pth", "expected"], [(i, a) for i, a in zip(img_pths, annot_pths)])
+    @pytest.mark.parametrize(["img_pth", "expected"], [(i, a) for i, a in zip(img_pths, annot_txts)])
     def test_ocr_img_with_lang(self, img_pth, expected):
         img = str(img_pth.absolute())
-        ocr_result = OCR._ocr_img(img, num_threads=1, languages=["eng"]).strip()
-        expected = expected.read_text().strip()
-        assert ocr_result == expected
+        ocr_result = OCR._ocr_img(img, num_threads=1, languages=["eng"])
+        cleaned_result = OCR.clean_ocr_text(ocr_result).strip()
+        expected = expected.strip()
+        assert cleaned_result == expected
 
 
-    @pytest.mark.parametrize(["img_pth", "expected"], [(i, a) for i, a in zip(img_pths, annot_pths)])
+    @pytest.mark.parametrize(["img_pth", "expected"], [(i, a) for i, a in zip(img_pths, annot_txts)])
     def test_ocr_img_without_lang(self, img_pth, expected):
         img = str(img_pth.absolute())
-        ocr_result = OCR._ocr_img(img, num_threads=1)
-        assert expected.read_text() in ocr_result
+        ocr_result = OCR._ocr_img(img, num_threads=1).strip()
+        cleaned_result = OCR.clean_ocr_text(ocr_result).strip()
+        expected = expected.strip()
+        assert cleaned_result == expected
 
     def test_gen_queryimages(self, tmpdir):
         col_dir = tmpdir.mkdir("collection")
