@@ -127,7 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-anki_ocr/meta.json
+
 
 
 # other stuff
@@ -137,3 +137,5 @@ anki_ocr/meta.json
 tests/ocr_scratch.py
 /tests/testdata/test_collection/
 tests/testdata/test_collection_template/collection.anki2-wal
+anki_ocr/meta.json
+.idea/
