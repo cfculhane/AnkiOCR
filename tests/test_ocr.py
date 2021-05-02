@@ -22,11 +22,11 @@ def gen_test_collection(new_dir) -> Collection:
     """Generates a test collection for us in tests, by copying a template collection"""
     # col_dir = Path(tmp_path_factory, "Collection")
     # col_dir.mkdir()
-    print(new_dir)
     shutil.copytree(TEMPLATE_COLLECTION_PTH.parent, new_dir, dirs_exist_ok=True)
     test_col_pth = Path(new_dir, TEMPLATE_COLLECTION_PTH.name)
     assert test_col_pth
-    test_col = Collection(path=str(TEMPLATE_COLLECTION_PTH))
+    test_col = Collection(path=str(test_col_pth))
+    print(f"Test collection created at {test_col_pth}")
     return test_col
 
 
