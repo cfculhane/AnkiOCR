@@ -257,7 +257,7 @@ class OCR:
                 os.unsetenv("OMP_THREAD_LIMIT")
             except:
                 pass
-        tessdata_config = f'--tessdata-dir "{TESSDATA_DIR.absolute()}"'
+        tessdata_config = f'--oem 1 --tessdata-dir "{TESSDATA_DIR.absolute()}"'
 
         return pytesseract.image_to_string(str(img_pth), lang="+".join(languages or ["eng"]),
                                            config=tessdata_config)
