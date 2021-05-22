@@ -1,3 +1,7 @@
+## 0.5.2 - 2021-05-22
+- Fix error on some Linux environments, see https://github.com/cfculhane/AnkiOCR/issues/20 , 
+  thanks to user thiswillbeyourgithub for the fix!
+
 ## 0.5.1 - 2021-05-02
 - Hotfix to include accidentally gitignored tesseract mac libs
 
