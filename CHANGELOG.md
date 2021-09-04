@@ -1,3 +1,6 @@
+## 0.5.3 - 2021-09-04
+- Fix raising of KeyError when img src is not found, thanks @thiswillbeyourgithub for the fix!
+
 ## 0.5.2 - 2021-05-22
 - Fix error on some Linux environments, see https://github.com/cfculhane/AnkiOCR/issues/20 , 
   thanks to user thiswillbeyourgithub for the fix!
