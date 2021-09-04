@@ -45,14 +45,17 @@ class OCRField:
         soup = BeautifulSoup(self.field_text, "html.parser")
         images = []
         for img in soup.find_all("img"):
-            img_pth = Path(img["src"])
-            full_pth = Path(self.media_dir, img_pth)
             try:
+                img_pth = Path(img["src"])
+                full_pth = Path(self.media_dir, img_pth)
                 if full_pth.exists() is False:
                     logger.warning(f"For note id {self.note_id}, image path {img_pth} does not exist in media dir")
                     continue
             except OSError:
                 logger.warning(f"For note id {self.note_id}, image path {img_pth} is invalid")
+                continue
+            except KeyError as e:
+                logger.warning(f'Could not find img["src"] for img={img}')
                 continue
 
             if img_pth.suffix in self.allowed_img_formats:
