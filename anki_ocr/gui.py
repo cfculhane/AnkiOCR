@@ -2,9 +2,10 @@ import time
 import traceback
 from math import ceil
 
-from anki.hooks import addHook
+from PyQt5.QtWidgets import QMenu
+
 from aqt import mw
-from aqt.browser import Browser, QMenu
+from aqt.browser import Browser
 from aqt.qt import QAction
 from aqt.utils import showInfo, askUser, showCritical
 
@@ -31,7 +32,8 @@ def on_run_ocr(browser: Browser):
 
     if config.get("tesseract_install_valid") is not True and config.get("text_output_location") == "new_field":
         showInfo(
-            f"Note that because this addon changes the note template, you will see a warning about changing the database and uploading to AnkiWeb. \n"
+            f"Note that because this addon changes the note template, you will see a warning about changing the "
+            f"database and uploading to AnkiWeb. \n "
             f"This is normal, and will be shown each time you modify a note template.\n"
             f"This message will be only be shown once.")
 
@@ -125,4 +127,5 @@ def on_menu_setup(browser: Browser):
 
 
 def create_menu():
+    from anki.hooks import addHook
     addHook("browser.setupMenus", on_menu_setup)

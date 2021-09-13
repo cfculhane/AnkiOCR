@@ -1,3 +1,8 @@
+## 0.6.0 - 2021-09-13
+- Fixes [#26](https://github.com/cfculhane/AnkiOCR/issues/26), thanks @bwhurd for the bug report
+- Other small fixes to support Anki  2.2.41 and beyond
+- Drop support for Anki versions prior to 2.1.41, but it should still work.
+
 ## 0.5.3 - 2021-09-04
 - Fix raising of KeyError when img src is not found, thanks @thiswillbeyourgithub for the fix!
 

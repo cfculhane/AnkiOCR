@@ -259,7 +259,7 @@ class OCR:
                 pass
         tessdata_config = f'--tessdata-dir "{TESSDATA_DIR.absolute()}"'
         if platform.system() == "Linux":
-            tessdata_config += " --oem 1" # See https://github.com/cfculhane/AnkiOCR/issues/20
+            tessdata_config += " --oem 1"  # See https://github.com/cfculhane/AnkiOCR/issues/20
 
         return pytesseract.image_to_string(str(img_pth), lang="+".join(languages or ["eng"]),
                                            config=tessdata_config)

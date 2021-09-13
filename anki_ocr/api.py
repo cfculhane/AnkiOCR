@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict
 
-from anki import Collection
+from anki.collection import Collection
 from anki.notes import Note
 from bs4 import BeautifulSoup
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class OCRImage:
     name: str  # E.g. Coronary_arteries
-    src: str  # E.g coronary_arties.png
+    src: str  # E.g coronary_arteries.png
     note_id: int
     field_name: str
     media_dir: str = None  # media dir of collection
@@ -45,6 +45,7 @@ class OCRField:
         soup = BeautifulSoup(self.field_text, "html.parser")
         images = []
         for img in soup.find_all("img"):
+            img_pth = None
             try:
                 img_pth = Path(img["src"])
                 full_pth = Path(self.media_dir, img_pth)
@@ -54,7 +55,7 @@ class OCRField:
             except OSError:
                 logger.warning(f"For note id {self.note_id}, image path {img_pth} is invalid")
                 continue
-            except KeyError as e:
+            except KeyError:
                 logger.warning(f'Could not find img["src"] for img={img}')
                 continue
 

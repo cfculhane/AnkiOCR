@@ -1,15 +1,15 @@
-anki==2.1.35
-aqt==2.1.35
-Pillow==8.0.1
-pytesseract==0.3.6
+anki>=2.1.41
+aqt>=2.1.35
+Pillow>=8.0.1
+pytesseract>=0.3.6
 reportlab==3.5.53
-svglib==1.0.1
-tqdm==4.51.0
-PyQtWebEngine==5.15.1
+svglib>=1.0.1
+tqdm>=4.51.0
+PyQtWebEngine>=5.15.1
 
 
 # Testing
-pytest==6.1.2
-pytest-cov==2.10.1
-pytest-html==2.1.1
+pytest>=6.1.2
+pytest-cov>=2.10.1
+pytest-html>=2.1.1
 rich

@@ -3,7 +3,7 @@ import logging
 import time
 from logging.handlers import MemoryHandler
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable
 
 VENDOR_DIR = Path(__file__).parent / "_vendor"
 
@@ -16,7 +16,7 @@ class AnkiOCRLogger(MemoryHandler):
         log_message = ""
         if len(self.buffer) > 0:
             messages = "\n\n".join([msg.getMessage() for msg in self.buffer])
-            log_message = f"\n{'-'*50}\nLog messages encountered during OCR processing: \n\n{messages}"
+            log_message = f"\n{'-' * 50}\nLog messages encountered during OCR processing: \n\n{messages}"
             self.buffer = []
         try:
             self.release()

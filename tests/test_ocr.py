@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytesseract
 import pytest
-from anki import Collection
+from anki.collection import Collection
 
 from anki_ocr.api import NotesQuery
 from anki_ocr.ocr import OCR

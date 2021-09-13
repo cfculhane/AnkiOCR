@@ -42,11 +42,16 @@ This program is distributed in the hope that it will be useful but WITHOUT ANY W
 <ul>
     - Will not work with handwritten text, this probably wont change as the library its based on is not optimised for handwritten text
     - Images with differently sized text, and/or images with low resolution text, may not process properly. If you have examples that you think should have been processed, please raise a GitHub issue so I can look into it
+    - Note that for versions of anki prior to 2.1.41, the addon is locked to AnkiOCR version 0.5.3, due to breaking changes in the Anki API
 </ul>
 
 
 <b> Changelog </b>
 <ul>
+    - 0.6.0 - 2021-09-13
+        - Fixes <a href="https://github.com/cfculhane/AnkiOCR/issues/26">#26</a>, thanks @bwhurd for the bug report
+        - Other small fixes to support Anki  2.1.41 and beyond
+        - Drop support for Anki versions prior to 2.1.41, but it should still work.
     - 0.5.3 - 2021-09-04
         - Fix raising of KeyError when img src is not found, thanks @thiswillbeyourgithub for the fix!
     - 0.5.2 - 2021-05-22
