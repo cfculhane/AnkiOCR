@@ -1,9 +1,9 @@
 import time
 import traceback
 from math import ceil
+from typing import List
 
 from PyQt5.QtWidgets import QMenu
-
 from aqt import mw
 from aqt.browser import Browser
 from aqt.qt import QAction
@@ -70,18 +70,25 @@ def on_run_ocr(browser: Browser):
         showCritical(text=f"Could not find a valid Tesseract-OCR installation! \n"
                           f"Please visit the addon page in at https://ankiweb.net/shared/info/450181164 for"
                           f" install instructions")
-    except RuntimeError as exc:
-        if progress:
-            progress.finish()
-            showInfo(f"Cancelled OCR processing with message : \n"
-                     f"{traceback.format_exception(etype=type(exc), value=exc, tb=exc.__traceback__)}")
 
-    except Exception as exc:
+    except (RuntimeError, Exception) as exc:
+        from anki_ocr import __version__ as anki_ocr_version
+        from anki.buildinfo import version as anki_version
+        import sys
+        import platform
+
         if progress:
             progress.finish()
-        tb_str = traceback.format_exception(etype=type(exc), value=exc, tb=exc.__traceback__)
-        showCritical(f"Error encountered during processing, attempting to stop AnkiOCR gracefully. Error below:\n"
-                     f"{' '.join(tb_str)}")
+        msg = f"Error encountered during processing. Debug info: \n" \
+              f"Anki Version: {anki_version} , AnkiOCR Version: {anki_ocr_version}\n" \
+              f"Platform: {platform.system()} , Python Version: {sys.version}"
+        log_messages = logger.handlers[0].flush()
+        if len(log_messages) > 0:
+            msg += f"Logging message generated during processing:\n{log_messages}"
+        exception_str: List[str] = traceback.format_exception(etype=type(exc), value=exc, tb=exc.__traceback__)
+        msg += "".join(exception_str)
+        showInfo(msg)
+
     finally:
 
         browser.model.reset()

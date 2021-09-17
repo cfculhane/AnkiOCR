@@ -50,7 +50,8 @@ class OCRField:
                 img_pth = Path(img["src"])
                 full_pth = Path(self.media_dir, img_pth)
                 if full_pth.exists() is False:
-                    logger.warning(f"For note id {self.note_id}, image path {img_pth} does not exist in media dir")
+                    logger.warning(
+                        f"For note id {self.note_id}, image path '{img_pth.absolute()}' does not exist in media dir")
                     continue
             except OSError:
                 logger.warning(f"For note id {self.note_id}, image path {img_pth} is invalid")
@@ -65,7 +66,7 @@ class OCRField:
                                        media_dir=self.media_dir, note_id=self.note_id,
                                        field_name=self.field_name))
             else:
-                logger.debug(f"For note id {self.note_id}, ignoring unsupported image: {img_pth}")
+                logger.warning(f"For note id {self.note_id}, ignoring unsupported image: {img_pth}")
 
         return images
 
