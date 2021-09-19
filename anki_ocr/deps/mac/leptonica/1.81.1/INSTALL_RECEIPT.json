@@ -14,7 +14,7 @@
     "lib/cmake/LeptonicaConfig.cmake",
     "lib/pkgconfig/lept.pc"
   ],
-  "time": 1632010233,
+  "time": 1632021889,
   "source_modified_time": 1623434101,
   "compiler": "clang",
   "aliases": [
@@ -65,7 +65,7 @@
       "version_scheme": 0
     },
     "path": "/usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/leptonica.rb",
-    "tap_git_head": "a204063d75e20cb3ff82debb1aef3cbb086edcec",
+    "tap_git_head": "77e42c852cdd56dc5e242d4704ad514f8a3f399c",
     "tap": "homebrew/core"
   },
   "arch": "x86_64",

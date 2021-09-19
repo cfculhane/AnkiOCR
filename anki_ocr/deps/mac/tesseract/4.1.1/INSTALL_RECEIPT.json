@@ -13,7 +13,7 @@
   "changed_files": [
     "lib/pkgconfig/tesseract.pc"
   ],
-  "time": 1632010237,
+  "time": 1632021894,
   "source_modified_time": 1577370111,
   "stdlib": "libcxx",
   "compiler": "clang",
@@ -70,7 +70,7 @@
       "version_scheme": 0
     },
     "path": "/usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/tesseract.rb",
-    "tap_git_head": "a204063d75e20cb3ff82debb1aef3cbb086edcec",
+    "tap_git_head": "77e42c852cdd56dc5e242d4704ad514f8a3f399c",
     "tap": "homebrew/core"
   },
   "arch": "x86_64",
