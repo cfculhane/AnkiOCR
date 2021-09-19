@@ -72,7 +72,7 @@ def on_run_ocr(browser: Browser):
                           f" install instructions")
 
     except (RuntimeError, Exception) as exc:
-        from anki_ocr import __version__ as anki_ocr_version
+        from . import __version__ as anki_ocr_version
         from anki.buildinfo import version as anki_version
         import sys
         import platform

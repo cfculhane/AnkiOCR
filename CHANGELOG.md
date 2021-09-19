@@ -1,3 +1,8 @@
+## 0.7.0 - 2021-09-19
+- Updating vendorised pytesseract
+- Updating mac tesseract dependencies
+
+
 ## 0.6.1 - 2021-09-17
 
 - Attempting to fix error where image does not exist

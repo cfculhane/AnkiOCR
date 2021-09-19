@@ -28,6 +28,7 @@ DEPS_DIR = SCRIPT_DIR / "deps"
 TESSDATA_DIR = DEPS_DIR / "tessdata"
 
 if ANKI_ENV is False:
+    # Running outside of Anki during development
     sys.path.append(str(SCRIPT_DIR.absolute()))
     import pytesseract
     from tqdm import tqdm
