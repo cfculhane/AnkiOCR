@@ -83,4 +83,4 @@ install_name_tool -change "/usr/local/opt/jpeg/lib/libjpeg.9.dylib" "../../../jp
 # Modifying little-cms2
 
 # Modifying libwebpmux
-install_name_tool -change "/usr/local/opt/webp/lib/libwebpmux.3.dylib" "../../../webp/${WEBP_VERSION}/lib/libwebpmux.3.dylib" "../../../webp/${WEBP_VERSION}/lib/libwebpmux.3.dylib"
+install_name_tool -change "/usr/local/Cellar/${WEBP_VERSION}/lib/libwebp.7.dylib" "../../../webp/${WEBP_VERSION}/lib/libwebp.7.dylib" "../../../webp/${WEBP_VERSION}/lib/libwebpmux.3.dylib"
