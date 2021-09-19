@@ -77,3 +77,10 @@ install_name_tool -change "/usr/local/opt/openjpeg/lib/libopenjp2.7.dylib" "../.
 
 # Modifying libtiff
 install_name_tool -change "/usr/local/opt/jpeg/lib/libjpeg.9.dylib" "../../../jpeg/9d/lib/libjpeg.9.dylib" "../../../libtiff/${LIBTIFF_VERSION}/lib/libtiff.5.dylib"
+
+# Modifying openjpeg
+
+# Modifying little-cms2
+
+# Modifying libwebpmux
+install_name_tool -change "/usr/local/opt/webp/lib/libwebpmux.3.dylib" "../../../webp/${WEBP_VERSION}/lib/libwebpmux.3.dylib" "../../../webp/${WEBP_VERSION}/lib/libwebpmux.3.dylib"
