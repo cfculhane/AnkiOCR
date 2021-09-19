@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# From https://yui-spl2.medium.com/making-tesseract-portable-in-macos-with-runtime-linking-f25c8159727a
+
 if ! command -v tesseract &> /dev/null
 then
     brew install tesseract
