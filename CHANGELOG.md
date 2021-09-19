@@ -1,6 +1,8 @@
 ## 0.7.0 - 2021-09-19
 - Updating vendorised pytesseract
 - Updating mac tesseract dependencies
+- Updated build script for tesseract for mac
+- The above fixes #27, #28, #29
 
 
 ## 0.6.1 - 2021-09-17
