@@ -1,1 +1,45 @@
-{"homebrew_version":"2.1.11-141-gdb18713","used_options":[],"unused_options":[],"built_as_bottle":true,"poured_from_bottle":true,"installed_as_dependency":true,"installed_on_request":false,"changed_files":["bin/libpng16-config","INSTALL_RECEIPT.json","lib/pkgconfig/libpng16.pc"],"time":1595772714,"source_modified_time":1555265432,"HEAD":null,"stdlib":null,"compiler":"clang","aliases":[],"runtime_dependencies":[],"source":{"path":"/usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/libpng.rb","tap":"homebrew/core","spec":"stable","versions":{"stable":"1.6.37","devel":"","head":"HEAD","version_scheme":0}}}
+{
+  "homebrew_version": "2.5.10-18-ge945b1c",
+  "used_options": [
+
+  ],
+  "unused_options": [
+
+  ],
+  "built_as_bottle": true,
+  "poured_from_bottle": true,
+  "installed_as_dependency": true,
+  "installed_on_request": false,
+  "changed_files": [
+    "bin/libpng16-config",
+    "lib/pkgconfig/libpng16.pc"
+  ],
+  "time": 1632010211,
+  "source_modified_time": 1555265432,
+  "compiler": "clang",
+  "aliases": [
+
+  ],
+  "runtime_dependencies": [
+
+  ],
+  "source": {
+    "spec": "stable",
+    "versions": {
+      "stable": "1.6.37",
+      "head": null,
+      "version_scheme": 0
+    },
+    "path": "/usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/libpng.rb",
+    "tap_git_head": "a204063d75e20cb3ff82debb1aef3cbb086edcec",
+    "tap": "homebrew/core"
+  },
+  "arch": "x86_64",
+  "built_on": {
+    "os": "Macintosh",
+    "os_version": "macOS 11.0.1",
+    "cpu_family": "penryn",
+    "xcode": "12.2",
+    "clt": "12.2.0.0.1.1604076827"
+  }
+}

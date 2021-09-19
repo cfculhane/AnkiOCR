@@ -1,0 +1,53 @@
+{
+  "homebrew_version": "3.0.0-21-g551594e",
+  "used_options": [
+
+  ],
+  "unused_options": [
+
+  ],
+  "built_as_bottle": true,
+  "poured_from_bottle": true,
+  "installed_as_dependency": true,
+  "installed_on_request": false,
+  "changed_files": [
+    "lib/pkgconfig/lcms2.pc"
+  ],
+  "time": 1632010220,
+  "source_modified_time": 1612629870,
+  "compiler": "clang",
+  "aliases": [
+    "lcms2"
+  ],
+  "runtime_dependencies": [
+    {
+      "full_name": "jpeg",
+      "version": "9d",
+      "declared_directly": true
+    },
+    {
+      "full_name": "libtiff",
+      "version": "4.3.0",
+      "declared_directly": true
+    }
+  ],
+  "source": {
+    "spec": "stable",
+    "versions": {
+      "stable": "2.12",
+      "head": null,
+      "version_scheme": 1
+    },
+    "path": "/usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/little-cms2.rb",
+    "tap_git_head": "a204063d75e20cb3ff82debb1aef3cbb086edcec",
+    "tap": "homebrew/core"
+  },
+  "arch": "x86_64",
+  "built_on": {
+    "os": "Macintosh",
+    "os_version": "macOS 11",
+    "cpu_family": "penryn",
+    "xcode": "12.4",
+    "clt": "12.4.0.0.1.1610135815"
+  }
+}

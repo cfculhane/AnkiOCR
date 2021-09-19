@@ -3,7 +3,13 @@ class Tesseract < Formula
   homepage "https://github.com/tesseract-ocr/"
   url "https://github.com/tesseract-ocr/tesseract/archive/4.1.1.tar.gz"
   sha256 "2a66ff0d8595bff8f04032165e6c936389b1e5727c3ce5a27b3e059d218db1cb"
+  license "Apache-2.0"
   head "https://github.com/tesseract-ocr/tesseract.git"
+
+  livecheck do
+    url :head
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+  end
 
   depends_on "autoconf" => :build
   depends_on "autoconf-archive" => :build
@@ -41,7 +47,9 @@ class Tesseract < Formula
     ENV.cxx11
 
     system "./autogen.sh"
-    system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking", "--datarootdir=#{HOMEBREW_PREFIX}/share"
+    system "./configure", "--prefix=#{prefix}",
+                          "--disable-dependency-tracking",
+                          "--datarootdir=#{HOMEBREW_PREFIX}/share"
 
     system "make"
 
@@ -53,10 +61,11 @@ class Tesseract < Formula
     resource("osd").stage { mv "osd.traineddata", share/"tessdata" }
   end
 
-  def caveats; <<~EOS
-    This formula contains only the "eng", "osd", and "snum" language data files.
-    If you need any other supported languages, run `brew install tesseract-lang`.
-  EOS
+  def caveats
+    <<~EOS
+      This formula contains only the "eng", "osd", and "snum" language data files.
+      If you need any other supported languages, run `brew install tesseract-lang`.
+    EOS
   end
 
   test do
