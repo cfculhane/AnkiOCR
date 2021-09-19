@@ -36,6 +36,7 @@ WEBP_VERSION="1.2.1"
 
 cd "tesseract_standalone/tesseract/${TESSERACT_VERSION}/bin/"
 
+# NOTE that libopenjp2.7.dylib, libopenjp2.2.4.0.dylib, libopenjp2.dylib are actuall all the same file, just symlinked to libopenjp2.2.4.0.dylib
 
 # Modifying libtesseract.4.dylib
 install_name_tool -change "/usr/local/Cellar/tesseract/${TESSERACT_VERSION}/lib/libtesseract.4.dylib" "@executable_path/../lib/libtesseract.4.dylib" tesseract
@@ -79,7 +80,7 @@ install_name_tool -change "/usr/local/opt/openjpeg/lib/libopenjp2.7.dylib" "../.
 install_name_tool -change "/usr/local/opt/jpeg/lib/libjpeg.9.dylib" "../../../jpeg/9d/lib/libjpeg.9.dylib" "../../../libtiff/${LIBTIFF_VERSION}/lib/libtiff.5.dylib"
 
 # Modifying openjpeg
-
+install_name_tool -change "../../../openjpeg/${OPENJPEG_VERSION}/lib/libopenjp2.2.4.0.dylib"
 # Modifying little-cms2
 
 # Modifying libwebpmux
