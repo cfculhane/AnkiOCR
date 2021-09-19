@@ -1,9 +1,12 @@
+## 0.7.1 - 2021-09-19
+- Removing Chinese, German, French and Spanish language data to reduce filesize
+- Updating readme with link to language data
+
 ## 0.7.0 - 2021-09-19
 - Updating vendorised pytesseract
 - Updating mac tesseract dependencies
 - Updated build script for tesseract for mac
 - The above fixes #27, #28, #29
-
 
 ## 0.6.1 - 2021-09-17
 

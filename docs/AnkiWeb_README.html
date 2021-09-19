@@ -38,6 +38,11 @@ This program is distributed in the hope that it will be useful but WITHOUT ANY W
 
 4. If you want to remove the OCR data from any notes, select them and then use the "Remove OCR data from selected notes" option in the menu shown above
 
+
+If you wish to have the OCR data outputted to a separate 'OCR' field on the note, which will modify your note types in your deck, you can set the `text_output_location` config option to `new_field`
+
+If you want to add new languages, you need to download the <a href="https://github.com/tesseract-ocr/tessdata">appropriate language data from here.</a>
+
 <b> Known issues</b>
 <ul>
     - Will not work with handwritten text, this probably wont change as the library its based on is not optimised for handwritten text
@@ -48,6 +53,9 @@ This program is distributed in the hope that it will be useful but WITHOUT ANY W
 
 <b> Changelog </b>
 <ul>
+    - 0.7.1 - 2021-09-19
+        - Removing Chinese, German, French and Spanish language data to reduce filesize
+        - Updating readme with link to language data
     - 0.7.0 - 2021-09-19
         - Updating vendorised pytesseract
         - Updating mac tesseract dependencies

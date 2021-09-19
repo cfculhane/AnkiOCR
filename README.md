@@ -20,7 +20,9 @@ Note that because this addon changes the note template, you will see a warning a
 
 4. If you want to remove the OCR data from any notes, select them and then use the "Remove OCR data from selected notes" option in the menu shown above
 
-If you wish to have the OCR data outputted to a seperate 'OCR' field on the note, which will modify your note types in your deck, you can set the `text_output_location` config option to `new_field`
+If you wish to have the OCR data outputted to a separate 'OCR' field on the note, which will modify your note types in your deck, you can set the `text_output_location` config option to `new_field`
+
+If you want to add new languages, you need to download the [appropriate language data from here](https://github.com/tesseract-ocr/tessdata).
 
 ## Installation
 
