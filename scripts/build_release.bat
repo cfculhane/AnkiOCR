@@ -4,8 +4,12 @@ echo Copying source code to dist folder ...
 cd ..
 robocopy .\anki_ocr .\dist\anki_ocr /E /PURGE /XD "__pycache__" "logs" /XF *.pickle *.pyc *.sqlite meta.json
 cd .\dist\anki_ocr
-del /f "..\anki_ocr.zip"
+IF EXIST "..\anki_ocr.zip" (
+    del /f  "..\anki_ocr.zip"
+)
 7z a "../anki_ocr.zip" .
-cd ../..
+cd ..
+REN "anki_ocr.zip" "anki_ocr.ankiaddon"
+cd ..
 ECHO Build complete!
 pause
