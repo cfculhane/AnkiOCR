@@ -14,8 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-#lib/
-#lib64/
 parts/
 sdist/
 var/
@@ -142,5 +140,3 @@ anki_ocr/meta.json
 
 tests/testdata/batch_imgs/imgs.txt
 
-# Tesseract lib
-!anki_ocr/deps/mac/tesseract/4.1.1/lib

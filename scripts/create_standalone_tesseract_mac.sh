@@ -29,7 +29,13 @@ install_name_tool -change /usr/local/opt/leptonica/lib/liblept.5.dylib ../../../
 install_name_tool -change /usr/local/opt/libpng/lib/libpng16.16.dylib ../../../libpng/1.6.37/lib/libpng16.16.dylib ../../../leptonica/1.81.1/lib/liblept.5.dylib
 install_name_tool -change /usr/local/opt/jpeg/lib/libjpeg.9.dylib ../../../jpeg/9d/lib/libjpeg.9.dylib ../../../leptonica/1.81.1/lib/liblept.5.dylib
 install_name_tool -change /usr/local/opt/giflib/lib/libgif.7.dylib ../../../giflib/5.2.1/lib/libgif.7.dylib ../../../leptonica/1.81.1/lib/liblept.5.dylib
+install_name_tool -change /usr/local/opt/giflib/lib/libgif.dylib ../../../giflib/5.2.1/lib/libgif.dylib ../../../leptonica/1.81.1/lib/liblept.5.dylib 
 install_name_tool -change /usr/local/opt/libtiff/lib/libtiff.5.dylib ../../../libtiff/4.3.0/lib/libtiff.5.dylib ../../../leptonica/1.81.1/lib/liblept.5.dylib
-install_name_tool -change /usr/local/opt/webp/lib/libwebp.7.dylib ../../../webp/1.2.0/lib/libwebp.7.dylib ../../../leptonica/1.81.1/lib/liblept.5.dylib
+
+# WebP
+install_name_tool -change /usr/local/opt/webp/lib/libwebp.7.dylib ../../../webp/1.2.1/lib/libwebp.7.dylib ../../../leptonica/1.81.1/lib/liblept.5.dylib
+install_name_tool -change /usr/local/opt/webp/lib/libwebpmux.3.dylib ../../../webp/1.2.1/lib/libwebpmux.3.dylib ../../../leptonica/1.81.1/lib/liblept.5.dylib
+
+# Openjpeg
 install_name_tool -change /usr/local/opt/openjpeg/lib/libopenjp2.7.dylib ../../../openjpeg/2.4.0/lib/libopenjp2.2.4.0.dylib ../../../leptonica/1.81.1/lib/liblept.5.dylib
 install_name_tool -change /usr/local/opt/jpeg/lib/libjpeg.9.dylib ../../../jpeg/9d/lib/libjpeg.9.dylib ../../../libtiff/4.3.0/lib/libtiff.5.dylib
