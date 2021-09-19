@@ -6,7 +6,6 @@ import subprocess
 import sys
 from contextlib import contextmanager
 from csv import QUOTE_NONE
-from distutils.version import LooseVersion
 from errno import ENOENT
 from functools import wraps
 from glob import iglob
@@ -21,6 +20,9 @@ from os.path import realpath
 from pkgutil import find_loader
 from tempfile import NamedTemporaryFile
 from time import sleep
+
+# Vendorised disttools
+from ..distutils.version import LooseVersion
 
 
 # Anki does not come with Pillow installed, and I'm not going to attempt to vendorise it!
