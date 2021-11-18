@@ -128,9 +128,57 @@ def on_menu_setup(browser: Browser):
     act_rm_ocr_fields.triggered.connect(lambda b=browser: on_rm_ocr_fields(browser))
     anki_ocr_menu.addAction(act_rm_ocr_fields)
 
+    act_missing_ocr = QAction(browser, text="Find missing captions")
+    act_missing_ocr.triggered.connect(lambda b=browser: find_missing_caption(browser))
+    anki_ocr_menu.addAction(act_missing_ocr)
+
+
     browser_cards_menu = browser.form.menu_Cards
     browser_cards_menu.addSeparator()
     browser_cards_menu.addMenu(anki_ocr_menu)
+
+
+def find_missing_caption(browser: Browser):
+    all_id_flds = mw.col.db.all("select id, mid, flds from notes")
+    models = mw.col.models.all()
+    IOCm = []
+    for m in models:
+        if "IOC" in m["name"] or "image occlusion" in m["name"].lower():
+            IOCm.append(m["id"])
+
+    to_OCR = []
+    for aif in all_id_flds:
+        cid = aif[0]
+        m = aif[1]
+        f = aif[2].replace("\n", " ").replace("\r", " ")
+
+        found = f.count("<img ")
+        if found > 0:
+            title = f.count(" title=")
+            if m not in IOCm:
+                if found - title > 0:
+                    to_OCR.append(cid)
+            else:
+                if found - title > 3:
+                    to_OCR.append(cid)
+
+    if to_OCR:
+        mw.requireReset()
+        try:
+            mw.col.tags.bulkAdd(to_OCR, "missing_OCR", True)
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            mw.maybeReset()
+
+        browser.activateWindow()
+        browser.form.searchEdit.lineEdit().setText("tag:missing_OCR")
+        if hasattr(browser, 'onSearch'):
+            browser.onSearch()
+        else:
+            browser.onSearchActivated()
+    return True
+
 
 
 def create_menu():
