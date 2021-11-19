@@ -165,6 +165,7 @@ def find_missing_caption(browser: Browser):
     if to_OCR:
         mw.requireReset()
         try:
+            mw.col.tags.bulkAdd([x[0] for x in all_id_flds], "missing_OCR", False)
             mw.col.tags.bulkAdd(to_OCR, "missing_OCR", True)
         except Exception as e:
             print(f"Error: {e}")
