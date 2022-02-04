@@ -16,10 +16,13 @@ from .utils import create_ocr_logger
 logger = create_ocr_logger()
 
 
-def on_run_ocr(browser: Browser):
+def on_run_ocr(browser: Browser, nids=None):
     time_start = time.time()
 
-    selected_nids = browser.selectedNotes()
+    if nids is None:
+        selected_nids = browser.selectedNotes()
+    else:
+        selected_nids = nids
     config = mw.addonManager.getConfig(__name__)
     num_notes = len(selected_nids)
     num_batches = ceil(num_notes / config["batch_size"])
@@ -129,44 +132,37 @@ def on_menu_setup(browser: Browser):
     anki_ocr_menu.addAction(act_rm_ocr_fields)
 
     act_missing_ocr = QAction(browser, text="Find missing captions")
-    act_missing_ocr.triggered.connect(lambda b=browser: find_missing_caption(browser))
+    act_missing_ocr.triggered.connect(lambda b=browser: find_missing_caption(browser, False))
     anki_ocr_menu.addAction(act_missing_ocr)
 
+    act_auto_missing_ocr = QAction(browser, text="Run AnkiOCR on all missing captions")
+    act_auto_missing_ocr.triggered.connect(lambda b=browser: find_missing_caption(browser, True))
+    anki_ocr_menu.addAction(act_auto_missing_ocr)
 
     browser_cards_menu = browser.form.menu_Cards
     browser_cards_menu.addSeparator()
     browser_cards_menu.addMenu(anki_ocr_menu)
 
 
-def find_missing_caption(browser: Browser):
+def find_missing_caption(browser: Browser, OCR):
     all_id_flds = mw.col.db.all("select id, mid, flds from notes")
-    models = mw.col.models.all()
-    IOCm = []
-    for m in models:
-        if "IOC" in m["name"] or "image occlusion" in m["name"].lower():
-            IOCm.append(m["id"])
 
-    to_OCR = []
+    id_missing_OCR = []
     for aif in all_id_flds:
         cid = aif[0]
-        m = aif[1]
         f = aif[2].replace("\n", " ").replace("\r", " ")
 
-        found = f.count("<img ")
+        found = f.count("<img ") - f.count(".svg") - f.count(".gif")
         if found > 0:
             title = f.count(" title=")
-            if m not in IOCm:
-                if found - title > 0:
-                    to_OCR.append(cid)
-            else:
-                if found - title > 3:
-                    to_OCR.append(cid)
+            if found - title > 0:
+                id_missing_OCR.append(cid)
 
-    if to_OCR:
+    if id_missing_OCR:
         mw.requireReset()
         try:
             mw.col.tags.bulkAdd([x[0] for x in all_id_flds], "missing_OCR", False)
-            mw.col.tags.bulkAdd(to_OCR, "missing_OCR", True)
+            mw.col.tags.bulkAdd(id_missing_OCR, "missing_OCR", True)
         except Exception as e:
             print(f"Error: {e}")
         finally:
@@ -178,6 +174,18 @@ def find_missing_caption(browser: Browser):
             browser.onSearch()
         else:
             browser.onSearchActivated()
+
+    if OCR is True:
+        on_run_ocr(browser, nids=id_missing_OCR)  # OCR cards
+
+        # remove tag "missing_OCR":
+        mw.requireReset()
+        try:
+            mw.col.tags.bulkAdd([x[0] for x in all_id_flds], "missing_OCR", False)
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            mw.maybeReset()
     return True
 
 
