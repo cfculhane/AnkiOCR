@@ -159,6 +159,9 @@ def find_missing_caption(browser: Browser, OCR):
                 id_missing_OCR.append(cid)
 
     if id_missing_OCR:
+        if OCR is True:
+            on_run_ocr(browser, nids=id_missing_OCR)  # OCR cards
+            return True
         mw.requireReset()
         try:
             mw.col.tags.bulkAdd([x[0] for x in all_id_flds], "missing_OCR", False)
@@ -175,17 +178,6 @@ def find_missing_caption(browser: Browser, OCR):
         else:
             browser.onSearchActivated()
 
-    if OCR is True:
-        on_run_ocr(browser, nids=id_missing_OCR)  # OCR cards
-
-        # remove tag "missing_OCR":
-        mw.requireReset()
-        try:
-            mw.col.tags.bulkAdd([x[0] for x in all_id_flds], "missing_OCR", False)
-        except Exception as e:
-            print(f"Error: {e}")
-        finally:
-            mw.maybeReset()
     return True
 
 
