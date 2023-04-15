@@ -1,19 +1,17 @@
 # Performance testing
-import sys
 from pathlib import Path
 
 import pytest
 
-sys.path.append(str(Path(__file__).absolute().parent.parent))
 
 import os
 import tempfile
 import time
 from typing import List, Tuple
 
-import pytesseract
 from rich.console import Console
 
+from anki_ocr import pytesseract
 from anki_ocr import TESTDATA_DIR
 from anki_ocr.ocr import OCR
 from anki_ocr.utils import batch
@@ -47,7 +45,7 @@ def gen_batched_txts(img_pths: List[Path], batch_size: int) -> Tuple[List[Path],
 class TestPerformance:
     test_img_pths = list(Path(TESTDATA_DIR, "annotated_imgs").glob("*"))
     tesseract_cmd = OCR.path_to_tesseract()
-    pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
+    pytesseract.tesseract_cmd = tesseract_cmd
     IMG_PTHS = [img_pth.absolute() for img_pth in IMGS_DIR.glob("*.png")]
     NUM_IMGS = len(IMG_PTHS)
     TXT_PATH = Path(IMGS_DIR, "imgs.txt")
@@ -61,8 +59,7 @@ class TestPerformance:
     def test_batched_single_threaded(self):
         console.print("Starting batched single threaded")
 
-        ocr = OCR(col=None, progress=None, languages=["eng"],
-                  num_threads=1, use_batching=True)
+        ocr = OCR(col=None, progress=None, languages=["eng"], num_threads=1, use_batching=True)
         _, time_taken = timeit(ocr._ocr_batch_process, self.batched_txts)
         try:
             console.print(f"OMP_THREAD_LIMIT = {os.environ['OMP_THREAD_LIMIT']}")
@@ -73,8 +70,7 @@ class TestPerformance:
     def test_batched_multi_threaded(self):
         console.print("Starting batched multi threaded")
 
-        ocr = OCR(col=None, progress=None, languages=["eng"],
-                  num_threads=4, use_batching=True)
+        ocr = OCR(col=None, progress=None, languages=["eng"], num_threads=4, use_batching=True)
         _, time_taken = timeit(ocr._ocr_batch_process, self.batched_txts)
         try:
             console.print(f"OMP_THREAD_LIMIT = {os.environ['OMP_THREAD_LIMIT']}")
@@ -85,8 +81,7 @@ class TestPerformance:
     def test_unbatched_single_threaded(self):
         console.print("Starting un-batched single threaded")
 
-        ocr = OCR(col=None, progress=None, languages=["eng"],
-                  num_threads=1, use_batching=False)
+        ocr = OCR(col=None, progress=None, languages=["eng"], num_threads=1, use_batching=False)
         _, time_taken = timeit(ocr._ocr_unbatched_process, self.IMG_PTHS)
         try:
             console.print(f"OMP_THREAD_LIMIT = {os.environ['OMP_THREAD_LIMIT']}")
@@ -97,8 +92,7 @@ class TestPerformance:
     def test_unbatched_multi_threaded(self):
         console.print("Starting un-batched multi threaded")
 
-        ocr = OCR(col=None, progress=None, languages=["eng"],
-                  num_threads=4, use_batching=False)
+        ocr = OCR(col=None, progress=None, languages=["eng"], num_threads=4, use_batching=False)
         _, time_taken = timeit(ocr._ocr_unbatched_process, self.IMG_PTHS)
         try:
             console.print(f"OMP_THREAD_LIMIT = {os.environ['OMP_THREAD_LIMIT']}")
@@ -107,7 +101,7 @@ class TestPerformance:
         return time_taken
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     perf_test = TestPerformance()
 
     time_batched_single = perf_test.test_batched_single_threaded()
@@ -116,10 +110,18 @@ if __name__ == '__main__':
     time_unbatched_multi = perf_test.test_unbatched_multi_threaded()
     console.print("\nAll done, timing results: \n")
     console.print(
-        f"time_batched_single = {round(time_batched_single, 2)} s | {round(time_batched_single / perf_test.NUM_IMGS, 2)} s per image")
+        f"time_batched_single = {round(time_batched_single, 2)} s | "
+        f"{round(time_batched_single / perf_test.NUM_IMGS, 2)} s per image"
+    )
     console.print(
-        f"time_batched_multi = {round(time_batched_multi, 2)} s | {round(time_batched_multi / perf_test.NUM_IMGS, 2)} s per image")
+        f"time_batched_multi = {round(time_batched_multi, 2)} s | "
+        f"{round(time_batched_multi / perf_test.NUM_IMGS, 2)} s per image"
+    )
     console.print(
-        f"time_unbatched_single = {round(time_unbatched_single, 2)} s | {round(time_unbatched_single / perf_test.NUM_IMGS, 2)} s per image")
+        f"time_unbatched_single = {round(time_unbatched_single, 2)} s | "
+        f"{round(time_unbatched_single / perf_test.NUM_IMGS, 2)} s per image"
+    )
     console.print(
-        f"time_unbatched_multi = {round(time_unbatched_multi, 2)} s | {round(time_unbatched_multi / perf_test.NUM_IMGS, 2)} s per image")
+        f"time_unbatched_multi = {round(time_unbatched_multi, 2)} s | "
+        f"{round(time_unbatched_multi / perf_test.NUM_IMGS, 2)} s per image"
+    )

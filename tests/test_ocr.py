@@ -2,12 +2,12 @@
 import shutil
 from pathlib import Path
 
-import pytesseract
 import pytest
 from anki.collection import Collection
 
 from anki_ocr.api import NotesQuery
 from anki_ocr.ocr import OCR
+from anki_ocr import pytesseract
 
 TESTDATA_DIR = Path(__file__).parent / "testdata"
 TEMPLATE_COLLECTION_PTH = TESTDATA_DIR / "test_collection_template" / "collection.anki2"
@@ -36,26 +36,25 @@ class TestOCR:
     annot_txts = [f.read_text(encoding="utf-8") for f in annot_pths]
     assert len(img_pths) == len(annot_pths)
     tesseract_cmd = OCR.path_to_tesseract()
-    pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
+    pytesseract.tesseract_cmd = tesseract_cmd
 
     def test_collection_ok(self, tmpdir):
         col_dir = tmpdir.mkdir("collection")
         test_col = gen_test_collection(col_dir)
-        assert test_col.basicCheck()
+        assert test_col.note_count() > 0
 
     @pytest.mark.parametrize(["img_pth", "expected"], [(i, a) for i, a in zip(img_pths, annot_txts)])
     def test_ocr_img_with_lang(self, img_pth, expected):
         img = str(img_pth.absolute())
-        ocr_result = OCR._ocr_img(img, num_threads=1, languages=["eng"])
+        ocr_result = OCR._ocr_img(img, languages=["eng"])
         cleaned_result = OCR.clean_ocr_text(ocr_result).strip()
         expected = expected.strip()
         assert cleaned_result == expected
 
-
     @pytest.mark.parametrize(["img_pth", "expected"], [(i, a) for i, a in zip(img_pths, annot_txts)])
     def test_ocr_img_without_lang(self, img_pth, expected):
         img = str(img_pth.absolute())
-        ocr_result = OCR._ocr_img(img, num_threads=1).strip()
+        ocr_result = OCR._ocr_img(img).strip()
         cleaned_result = OCR.clean_ocr_text(ocr_result).strip()
         expected = expected.strip()
         assert cleaned_result == expected
@@ -71,7 +70,7 @@ class TestOCR:
     def test_query_noteids(self, tmpdir):
         col_dir = tmpdir.mkdir("collection")
         test_col = gen_test_collection(col_dir)
-        ocr = OCR(col=test_col)
+        OCR(col=test_col)
         note_ids = [1601851621708, 1601851571572]
         q_images = NotesQuery(col=test_col, note_ids=note_ids)
         assert len(q_images.notes) == 2
@@ -126,11 +125,16 @@ class TestOCR:
         ocr.remove_ocr_on_notes(note_ids=note_ids)
 
     def test_clean_ocr_text(self):
-        input_str = "this is some text: with a result\n\n\nThis is some double colon :: with result" \
-                    "\n\nwithout spaces::new word\none space:: new word\n\n\n\none space before ::new word\n" \
-                    "triple ::: new word\n\n\n\n\nquadruple ::::newword"""
-        expected_output = "this is some text: with a result\nThis is some double colon : with result\n" \
-                          "without spaces:new word\none space: new word\none space before :new word\n" \
-                          "triple : new word\nquadruple :newword"
+        input_str = (
+            "this is some text: with a result\n\n\nThis is some double colon :: with result"
+            "\n\nwithout spaces::new word\none space:: new word\n\n\n\none space before ::new word\n"
+            "triple ::: new word\n\n\n\n\nquadruple ::::newword"
+            ""
+        )
+        expected_output = (
+            "this is some text: with a result\nThis is some double colon : with result\n"
+            "without spaces:new word\none space: new word\none space before :new word\n"
+            "triple : new word\nquadruple :newword"
+        )
         output = OCR.clean_ocr_text(input_str)
         assert output == expected_output

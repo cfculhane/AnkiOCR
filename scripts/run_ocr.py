@@ -1,11 +1,12 @@
 import logging
 from pathlib import Path
 
-from anki import Collection
+from anki.collection import Collection
+
 
 from anki_ocr.ocr import SCRIPT_DIR, OCR
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     logging.basicConfig(format=logging_format, level=logging.INFO)
     # Not to be run inside Anki

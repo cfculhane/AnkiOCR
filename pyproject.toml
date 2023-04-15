@@ -1,0 +1,74 @@
+[tool.poetry]
+name = "ankiocr"
+version = "0.7.1"
+description = "Anki 2.1 addon to generate OCR text from images inside of Anki notes/cards."
+authors = ["Chris Culhane <cfculhane@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "anki_ocr", from = "src" }
+]
+
+[tool.poetry.dependencies]
+# Note these are the only dependencies that can be used, any others have to be vendorized
+python = ">=3.9,<3.11"
+anki = "^2.1.61"
+aqt = { extras = ["qt6"], version = "^2.1.61" }
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.2.0"
+pytest = ">=6.0.0,<7.0.0"
+pytest-html = "^3.2.0"
+rich = "^13.3.4"
+pre-commit = "^3.2.2"
+ruff = "^0.0.261"
+black = "^23.3.0"
+tqdm = "^4.65.0"
+types-decorator = "^5.1.8.3"
+types-markdown = "^3.4.2.7"
+types-protobuf = "^4.22.0.2"
+types-requests = "^2.28.11.17"
+types-urllib3 = "^1.26.25.10"
+types-waitress = "^2.1.4.7"
+
+
+[tool.black]
+line-length = 120
+target-version = ['py39']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | generated
+)/
+'''
+
+[tool.mypy]
+files = "src/anki_ocr"
+exclude = "colorlog|pytesseract|version|deps"
+python_version = "3.9"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+show_error_codes = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.pytest.ini_options]
+addopts = "-ra --showlocals --strict-markers --tb=short"
+#addopts = tests/ -rfE --cov=anki_ocr --cov-report html  --html=tests/reports/test_results/report.html
+#;addopts = tests/ -rfE --showlocals
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

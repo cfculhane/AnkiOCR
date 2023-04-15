@@ -1,0 +1,65 @@
+{
+  "homebrew_version": "2.7.5-10-g8869208",
+  "used_options": [
+
+  ],
+  "unused_options": [
+
+  ],
+  "built_as_bottle": true,
+  "poured_from_bottle": true,
+  "installed_as_dependency": true,
+  "installed_on_request": false,
+  "changed_files": [
+    "lib/openjpeg-2.4/OpenJPEGConfig.cmake",
+    "lib/openjpeg-2.4/OpenJPEGTargets-release.cmake",
+    "lib/pkgconfig/libopenjp2.pc"
+  ],
+  "time": 1632021881,
+  "source_modified_time": 1609189179,
+  "compiler": "clang",
+  "aliases": [
+
+  ],
+  "runtime_dependencies": [
+    {
+      "full_name": "libpng",
+      "version": "1.6.37",
+      "declared_directly": true
+    },
+    {
+      "full_name": "jpeg",
+      "version": "9d",
+      "declared_directly": false
+    },
+    {
+      "full_name": "libtiff",
+      "version": "4.3.0",
+      "declared_directly": true
+    },
+    {
+      "full_name": "little-cms2",
+      "version": "2.12",
+      "declared_directly": true
+    }
+  ],
+  "source": {
+    "spec": "stable",
+    "versions": {
+      "stable": "2.4.0",
+      "head": null,
+      "version_scheme": 0
+    },
+    "path": "/usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/openjpeg.rb",
+    "tap_git_head": "77e42c852cdd56dc5e242d4704ad514f8a3f399c",
+    "tap": "homebrew/core"
+  },
+  "arch": "x86_64",
+  "built_on": {
+    "os": "Macintosh",
+    "os_version": "macOS 11",
+    "cpu_family": "penryn",
+    "xcode": "12.3",
+    "clt": "12.3.0.0.1.1607026830"
+  }
+}

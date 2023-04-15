@@ -12,11 +12,11 @@ Note that because this addon changes the note template, you will see a warning a
 
 2. On the toolbar at the top, select 'Cards', then 'AnkiOCR', and select 'Run AnkiOCR on selected notes', as shown below
 
-![docs/menu.png](docs/menu.png) 
+![docs/menu.png](docs/menu.png)
 
 3. After processing, each of the images in the note will have the ocr data embedded in the `title` html tag, viewable as a tooltip:
 
-![docs/text_tooltip.png](docs/text_tooltip.png) 
+![docs/text_tooltip.png](docs/text_tooltip.png)
 
 4. If you want to remove the OCR data from any notes, select them and then use the "Remove OCR data from selected notes" option in the menu shown above
 
@@ -32,19 +32,17 @@ If you're on **Windows** or **Mac**, tesseract is bundled with the addon.
 
 If you're on **Linux** [carefully follow the instructions here](https://tesseract-ocr.github.io/tessdoc/Home.html)
 
-AnkiOCR was built on Python 3.8, but should work for Python versions >= 3.7.
+AnkiOCR was built on Python 3.9.
 
 It is highly recommended to to use inside the Anki application, by [installing the addon from AnkiWeb](https://ankiweb.net/shared/info/450181164)
 If you want to run it externally to anki, see below:
 
-Then clone the git repo:
-
-`git clone https://github.com/cfculhane/AnkiOCR`
-
-Create a venv, then once activated install requirements:
-
-`pip install -r requirements.txt`
+- Ensure you have pyenv and poetry installed
+- Then clone the git repo:
+    `git clone https://github.com/cfculhane/AnkiOCR`
+- Setup env and install dependencies
+     `make install`
 
 ## Testing
 
-Ensure all requirements as above are install, then run `pytest`
+`make test`
