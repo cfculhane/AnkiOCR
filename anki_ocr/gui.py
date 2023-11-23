@@ -3,10 +3,10 @@ import traceback
 from math import ceil
 from typing import List
 
-from PyQt5.QtWidgets import QMenu
+from PyQt6 import QtWidgets, QtGui
+from PyQt6.QtWidgets import QMenu
 from aqt import mw
 from aqt.browser import Browser
-from aqt.qt import QAction
 from aqt.utils import showInfo, askUser, showCritical
 
 from ._vendor import pytesseract
@@ -43,7 +43,7 @@ def on_run_ocr(browser: Browser):
     try:
         progress = mw.progress
         progress.start(immediate=True, min=0, max=num_batches)
-        progress.update(value=0, max=num_batches, label="Starting OCR processing...")
+        progress.update(0, maximum=num_batches, label="Starting OCR processing...")
     except TypeError:  # old version of Qt/Anki
         progress = None
 
@@ -58,11 +58,13 @@ def on_run_ocr(browser: Browser):
         ocr.run_ocr_on_notes(note_ids=selected_nids)
         if progress:
             progress.finish()
+
         time_taken = time.time() - time_start
         log_messages = logger.handlers[0].flush()
         showInfo(
             f"Processed OCR for {num_notes} notes in {round(time_taken, 1)}s ({round(time_taken / num_notes, 1)}s per note)\n"
             f"{log_messages}")
+
 
     except pytesseract.TesseractNotFoundError:
         if progress:
@@ -92,8 +94,8 @@ def on_run_ocr(browser: Browser):
     finally:
 
         browser.model.reset()
-        mw.requireReset()
-
+        #mw.requireReset()
+        mw.progress.finish()
 
 def on_rm_ocr_fields(browser: Browser):
     config = mw.addonManager.getConfig(__name__)
@@ -118,13 +120,13 @@ def on_rm_ocr_fields(browser: Browser):
 
 
 def on_menu_setup(browser: Browser):
-    anki_ocr_menu = QMenu(("AnkiOCR"), browser)
+    anki_ocr_menu = QtWidgets.QMenu(("AnkiOCR"), browser)
 
-    act_run_ocr = QAction(browser, text="Run AnkiOCR on selected notes")
+    act_run_ocr = QtGui.QAction(browser, text="Run AnkiOCR on selected notes")
     act_run_ocr.triggered.connect(lambda b=browser: on_run_ocr(browser))
     anki_ocr_menu.addAction(act_run_ocr)
 
-    act_rm_ocr_fields = QAction(browser, text="Remove OCR data from selected notes")
+    act_rm_ocr_fields = QtGui.QAction(browser, text="Remove OCR data from selected notes")
     act_rm_ocr_fields.triggered.connect(lambda b=browser: on_rm_ocr_fields(browser))
     anki_ocr_menu.addAction(act_rm_ocr_fields)
 
