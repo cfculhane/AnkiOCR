@@ -50,7 +50,7 @@ exclude = '''
 
 [tool.mypy]
 files = "src/anki_ocr"
-exclude = "colorlog|pytesseract|version|deps"
+exclude = "colorlog|version|deps"
 python_version = "3.9"
 check_untyped_defs = true
 ignore_missing_imports = true
