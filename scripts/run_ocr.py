@@ -4,16 +4,16 @@ from pathlib import Path
 from anki.collection import Collection
 
 
-from anki_ocr.ocr import SCRIPT_DIR, OCR
+from anki_ocr.ocr import MODULE_DIR, OCR
 
 if __name__ == "__main__":
     logging_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     logging.basicConfig(format=logging_format, level=logging.INFO)
     # Not to be run inside Anki
-    PROFILE_HOME = Path(SCRIPT_DIR.parent, "tests/User 1")
+    PROFILE_HOME = Path(MODULE_DIR.parent.parent, "tests/testdata/test_collection_template")
     cpath = PROFILE_HOME / "collection.anki2"
 
-    collection = Collection(str(cpath), log=True)  # Collection is locked from here on
+    collection = Collection(str(cpath))  # Collection is locked from here on
 
     ocr = OCR(col=collection, text_output_location="new_field")
     all_note_ids = ocr.col.db.list("select * from notes")

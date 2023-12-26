@@ -3,10 +3,10 @@ import traceback
 from math import ceil
 from typing import List
 
-from PyQt6.QtWidgets import QMenu
 from aqt import mw
 from aqt.browser import Browser
 from aqt.qt import QAction
+from aqt.qt import QMenu
 from aqt.utils import showInfo, askUser, showCritical
 
 from . import pytesseract
@@ -61,6 +61,7 @@ def on_run_ocr(browser: Browser):
         num_threads=config["num_threads"],
         use_batching=config["use_batching"],
         use_multithreading=config["use_multithreading"],
+        preserve_interword_spaces=config["preserve_interword_spaces"],
     )
     try:
         ocr.run_ocr_on_notes(note_ids=selected_nids)

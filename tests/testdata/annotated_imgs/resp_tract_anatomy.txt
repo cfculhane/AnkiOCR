@@ -1,4 +1,3 @@
-Trachea
 Primary
 bronchus
 Conducting _|
@@ -7,9 +6,9 @@ Bronchiole
 (1 mm or less
 in diameter)
 Terminal
-& bronchiole
-\ Respiratory
-I \<ronchiole
+bronchiole
+Respiratory
+L \<ronchiole
 Alveolar
 Respiratory _|
 portion

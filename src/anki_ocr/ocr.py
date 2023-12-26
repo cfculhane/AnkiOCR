@@ -23,13 +23,13 @@ from . import pytesseract
 
 ANKI_ENV = "python" not in Path(sys.executable).stem
 
-SCRIPT_DIR = Path(__file__).parent
-DEPS_DIR = SCRIPT_DIR / "deps"
+MODULE_DIR = Path(__file__).parent
+DEPS_DIR = MODULE_DIR / "deps"
 TESSDATA_DIR = DEPS_DIR / "tessdata"
 
 if ANKI_ENV is False:
     # Running outside of Anki during development
-    sys.path.append(str(SCRIPT_DIR.absolute()))
+    sys.path.append(str(MODULE_DIR.absolute()))
     from tqdm import tqdm
 
     ProgressManager = None
@@ -54,6 +54,7 @@ class OCR:
         batch_size: int = 5,
         use_batching=True,
         use_multithreading=False,
+        preserve_interword_spaces=False,
     ):
         self.col = col
         self.progress = progress
@@ -72,6 +73,7 @@ class OCR:
         else:
             self.num_threads = 1
         self.batch_size = batch_size
+        self.preserve_interword_spaces = preserve_interword_spaces
 
     def _ocr_batch_process(self, batched_txts):
         # Split into batches and send each to a different tesseract process
@@ -86,7 +88,9 @@ class OCR:
         pbar = tqdm(total=num_batches) if ANKI_ENV is False else None
 
         for batched_img_txt in batched_txts:
-            ocr_text = self._ocr_img(batched_img_txt, languages=self.languages)
+            ocr_text = self._ocr_img(
+                batched_img_txt, preserve_interword_spaces=self.preserve_interword_spaces, languages=self.languages
+            )
             completed += 1
             raw_results[batched_img_txt] = ocr_text
             if self.progress is not None:
@@ -112,7 +116,9 @@ class OCR:
         pbar = tqdm(total=len(image_paths)) if ANKI_ENV is False else None
 
         for image_path in image_paths:
-            ocr_text = self._ocr_img(image_path, languages=self.languages)
+            ocr_text = self._ocr_img(
+                image_path, preserve_interword_spaces=self.preserve_interword_spaces, languages=self.languages
+            )
             completed += 1
             raw_results[image_path] = ocr_text
 
@@ -136,7 +142,7 @@ class OCR:
     def clean_ocr_text(ocr_text: str) -> str:
         """
         :param ocr_text: Text output from tesseract
-        :returns: Cleaned text with extraneous newlines and double colon's removed
+        :returns: Cleaned text with extraneous newlines, double colon's, and \<'s removed
         """
         cleaned_text = "\n".join([line.strip() for line in ocr_text.splitlines() if line.strip() != ""])
         cleaned_text = re.sub(":+", ":", cleaned_text)
@@ -193,12 +199,19 @@ class OCR:
         return images_to_process
 
     @staticmethod
-    def _ocr_img(img_pth: Union[Path, str, PathLike], languages: Optional[List[str]] = None) -> str:
+    def _ocr_img(
+        img_pth: Union[Path, str, PathLike],
+        *,
+        preserve_interword_spaces: bool = False,
+        languages: Optional[List[str]] = None,
+    ) -> str:
         """Wrapper for pytesseract.image_to_string
 
         img_pth can be either a pathlike to a single image, or a path to a textfile containing a list of image paths
         """
-        tessdata_config = f'--tessdata-dir "{TESSDATA_DIR.absolute()}" --oem 2 --psm 12 -c preserve_interword_spaces=1'
+        tessdata_config = (
+            f'--tessdata-dir "{TESSDATA_DIR.absolute()}" -c preserve_interword_spaces={int(preserve_interword_spaces)}'
+        )
 
         return pytesseract.image_to_string(str(img_pth), lang="+".join(languages or ["eng"]), config=tessdata_config)
 

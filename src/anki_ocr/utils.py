@@ -7,8 +7,6 @@ from logging.handlers import MemoryHandler
 from pathlib import Path
 from typing import Iterable, Optional, Union, Dict, List, Tuple
 
-from anki_ocr import colorlog
-
 VENDOR_DIR = Path(__file__).parent / "_vendor"
 
 logger = logging.getLogger("anki_ocr")
@@ -112,10 +110,10 @@ def run_cmd(
 
 
 def create_logger(name: str) -> logging.Logger:
-    handler = colorlog.StreamHandler()
-    handler.setFormatter(colorlog.ColoredFormatter("%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s (%(lineno)d) - %(levelname)s - %(message)s"))
 
-    _logger = colorlog.getLogger(name)
+    _logger = logging.getLogger(name)
     _logger.addHandler(handler)
     _logger.setLevel(logging.INFO)
     _logger.propagate = True

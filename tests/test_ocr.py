@@ -46,7 +46,7 @@ class TestOCR:
     @pytest.mark.parametrize(["img_pth", "expected"], [(i, a) for i, a in zip(img_pths, annot_txts)])
     def test_ocr_img_with_lang(self, img_pth, expected):
         img = str(img_pth.absolute())
-        ocr_result = OCR._ocr_img(img, languages=["eng"])
+        ocr_result = OCR._ocr_img(img, languages=["eng"], preserve_interword_spaces=False)
         cleaned_result = OCR.clean_ocr_text(ocr_result).strip()
         expected = expected.strip()
         assert cleaned_result == expected
@@ -54,7 +54,7 @@ class TestOCR:
     @pytest.mark.parametrize(["img_pth", "expected"], [(i, a) for i, a in zip(img_pths, annot_txts)])
     def test_ocr_img_without_lang(self, img_pth, expected):
         img = str(img_pth.absolute())
-        ocr_result = OCR._ocr_img(img).strip()
+        ocr_result = OCR._ocr_img(img, preserve_interword_spaces=False).strip()
         cleaned_result = OCR.clean_ocr_text(ocr_result).strip()
         expected = expected.strip()
         assert cleaned_result == expected

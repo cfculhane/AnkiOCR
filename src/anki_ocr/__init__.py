@@ -1,8 +1,8 @@
 from pathlib import Path
 
-# from . import gui
+from . import gui
 
-# gui.create_menu()
+gui.create_menu()
 
 __version__ = "0.7.1"
 TEST_DIR = Path(__file__).parent.parent.parent / "tests"

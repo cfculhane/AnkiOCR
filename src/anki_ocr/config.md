@@ -19,3 +19,5 @@ Please note that the following settings do not sync and require a restart to app
   processing times. Default `true`
 - `use_multithreading` (bool): If true, use multithreading to increase processing speed. Disable if experiencing
   abnormally slow processing times. Default `true`
+- `preserve_interword_spaces` (bool): If true, detected inter-word spaces will be preserved, instead of being compressed
+  to a single space character (default behavior). Default `false`
